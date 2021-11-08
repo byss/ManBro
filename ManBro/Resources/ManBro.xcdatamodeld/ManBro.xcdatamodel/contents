@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="21A559" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+    <entity name="Document" representedClassName="KBDocument" syncable="YES" codeGenerationType="category">
+        <attribute name="html" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="name" attributeType="String" minValueString="1"/>
+        <attribute name="section" attributeType="String" minValueString="1"/>
+        <relationship name="prefix" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Prefix" inverseName="documents" inverseEntity="Prefix"/>
+        <fetchIndex name="fieldsIndex">
+            <fetchIndexElement property="name" type="Binary" order="ascending"/>
+            <fetchIndexElement property="section" type="Binary" order="ascending"/>
+            <fetchIndexElement property="prefix" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="name"/>
+                <constraint value="section"/>
+                <constraint value="prefix"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="Prefix" representedClassName="KBPrefix" syncable="YES" codeGenerationType="category">
+        <attribute name="url" attributeType="URI"/>
+        <relationship name="documents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Document" inverseName="prefix" inverseEntity="Document"/>
+        <fetchIndex name="byURLIndex">
+            <fetchIndexElement property="url" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="url"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <elements>
+        <element name="Document" positionX="-63" positionY="-18" width="128" height="89"/>
+        <element name="Prefix" positionX="-54" positionY="18" width="128" height="59"/>
+    </elements>
+</model>

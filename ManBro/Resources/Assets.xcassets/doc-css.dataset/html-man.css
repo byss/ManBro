@@ -1,0 +1,47 @@
+body {
+	margin: 0;
+}
+
+div.html-man-wrap {
+	display: flex;
+	margin: 1em;
+	flex-direction: column;
+	max-height: calc(100vh - 2em);
+	overflow: hidden;
+}
+
+div.manual-text {
+	overflow: scroll;
+}
+
+table.head {
+	border-bottom: 1px solid black;
+}
+
+table.foot {
+	border-top: 1px solid black;
+}
+
+div#html-man-toc {
+	position: absolute;
+	height: 91.7%;
+	background-color: white;
+	border-right: 1px solid black;
+	overflow: scroll;
+}
+
+div.html-man-toc-closed {
+	display: none;
+}
+
+div.html-man-toc-opened {
+	display: block;
+}
+
+li.html-man-toc-closed > ul {
+	display: none;
+}
+
+li.html-man-toc-opened > ul {
+	display: normal;
+}
