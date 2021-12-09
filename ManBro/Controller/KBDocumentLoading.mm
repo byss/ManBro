@@ -12,7 +12,7 @@
 #import <WebKit/WKURLSchemeTask.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-#import "KBTask.h"
+#import "KBManPageTasks.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
 @interface NSString (pathComponents)
@@ -90,7 +90,7 @@
 			return completion ([[KBBundledData alloc] initWithType:UTTypeHTML chunks:preHTML.data, document.html, postHTML.data, nil]);
 		}
 		
-		KBGenerateHTMLTask *const task = [[KBGenerateHTMLTask alloc] initWithInputFileURL:document.url];
+		KBGenerateHTMLTask *const task = [[KBGenerateHTMLTask alloc] initWithInputFileURL:document.URL];
 		[task startWithCompletion:^(NSData *result, NSError *error) {
 			if (isCancelledBlock ()) { return; }
 			if (error) {

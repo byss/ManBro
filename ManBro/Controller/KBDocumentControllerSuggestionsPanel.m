@@ -8,12 +8,14 @@
 
 #import "KBDocumentController_Private.h"
 
-#import "KBTask.h"
+#import "KBPrefix.h"
+#import "KBSection.h"
 #import "KBDocument.h"
+#import "KBSearchManager.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
 @interface KBDocumentControllerSuggestionsPanel () <NSTableViewDataSource, NSTableViewDelegate> {
-	__weak KBManQueryTask *_currentTask;
+	KBSearchManager *_searchManager;
 	NSInteger _clickedRow;
 }
 
@@ -37,6 +39,8 @@
 		self.movable = NO;
 		self.releasedWhenClosed = NO;
 		self.worksWhenModal = YES;
+		
+		_searchManager = [[KBSearchManager alloc] initWithContext:[NSPersistentContainer sharedContainer].viewContext];
 		
 		NSTableView *tableView = [NSTableView new];
 		tableView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -87,43 +91,8 @@
 }
 
 - (void) setQueryText: (NSString *) queryText {
-	[_currentTask cancel];
-	if (!queryText.length) {
-		self.documents = nil;
-		return;
-	}
-	
-	KBManQueryTask *task = [[KBManQueryTask alloc] initWithQuery:queryText];
-	_currentTask = task;
-	[task startWithCompletion:^(NSArray <NSURL *> *result, NSError *error) {
-		if (error) {
-			if ([error.domain isEqualToString:KBTaskErrorDomain] && (error.code == KBTaskCancelledError)) {
-				return;
-			}
-			return dispatch_async (dispatch_get_main_queue (), ^{ [self presentError:error]; });
-		}
-		
-		NSPersistentContainer *const container = [NSPersistentContainer sharedContainer];
-		[container performBackgroundTask:^(NSManagedObjectContext *ctx) {
-			NSMutableArray <KBDocument *> *const docs = [[NSMutableArray alloc] initWithCapacity:result.count];
-			for (NSURL *docURL in result) {
-				KBDocument *const doc = [KBDocument fetchOrCreateDocumentWithURL:docURL context:ctx];
-				doc ? [docs addObject:doc] : (void) 0;
-			}
-			NSError *saveError = nil;
-			[ctx save:&saveError];
-			NSArray <NSManagedObjectID *> *const objectIDs = saveError ? nil : [docs valueForKey:NSStringFromSelector (@selector (objectID))];
-			dispatch_async (dispatch_get_main_queue (), ^{
-				if (saveError) {
-					return (void) [self presentError:saveError];
-				}
-				NSMutableArray <KBDocument *> *const documents = [[NSMutableArray alloc] initWithCapacity:objectIDs.count];
-				for (NSManagedObjectID *objectID in objectIDs) {
-					[documents addObject:[container.viewContext objectWithID:objectID]];
-				}
-				self.documents = documents;
-			});
-		}];
+	[_searchManager fetchDocumentsMatchingQuery:[[KBSearchQuery alloc] initWithText:queryText] completion:^(NSArray <id <NSFetchedResultsSectionInfo>> *documents) {
+		self.documents = documents.firstObject.objects;
 	}];
 }
 
@@ -183,7 +152,7 @@
 
 - (id) tableView: (NSTableView *) tableView objectValueForTableColumn: (NSTableColumn *) tableColumn row: (NSInteger) row {
 	KBDocument *const doc = self.documents [row];
-	return [[NSString alloc] initWithFormat:@"%@ (%@) – %@", doc.name, doc.section, doc.url];
+	return [[NSString alloc] initWithFormat:@"%@ (%@) – %@", doc.title, doc.section.name, doc.URL];
 }
 
 - (void) tableViewSelectionIsChanging: (NSNotification *) notification {

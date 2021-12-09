@@ -7,16 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4326E19D27439A0B00C82DEE /* CoreData+logging.m in Sources */ = {isa = PBXBuildFile; fileRef = 4326E19927439A0A00C82DEE /* CoreData+logging.m */; };
+		4326E1A427439A6900C82DEE /* NSPersistentContainer+sharedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4326E1A227439A6800C82DEE /* NSPersistentContainer+sharedContainer.m */; };
+		4326E1A727439C3B00C82DEE /* KBIndexManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4326E1A627439C3B00C82DEE /* KBIndexManager.m */; };
+		4326E1AB27439CBC00C82DEE /* KBManPageTasks.m in Sources */ = {isa = PBXBuildFile; fileRef = 4326E1AA27439CBC00C82DEE /* KBManPageTasks.m */; };
 		434429D127391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 434429D027391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m */; };
 		434429D5273923E600D222E7 /* KBDocumentLoading.mm in Sources */ = {isa = PBXBuildFile; fileRef = 434429D4273923E600D222E7 /* KBDocumentLoading.mm */; };
 		434429D82739466500D222E7 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 434429D72739466500D222E7 /* UniformTypeIdentifiers.framework */; };
 		435543C32578B46500B3A8ED /* KBTask.mm in Sources */ = {isa = PBXBuildFile; fileRef = 435543C22578B46500B3A8ED /* KBTask.mm */; };
+		43C7BA5A2755956F00B5049B /* KBSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA592755956F00B5049B /* KBSection.m */; };
+		43C7BA6427559C0100B5049B /* NSManagedObject+convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA6327559C0100B5049B /* NSManagedObject+convenience.m */; };
+		43C7BA692755A5E400B5049B /* KBFilesystemObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA682755A5E400B5049B /* KBFilesystemObject.m */; };
+		43C7BA6C2760C3E100B5049B /* KBSearchManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA6B2760C3E100B5049B /* KBSearchManager.m */; };
+		43C7BA702760F84C00B5049B /* NSString+searchPredicateValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA6F2760F84C00B5049B /* NSString+searchPredicateValue.m */; };
 		43ED98482575B20400CB3098 /* KBAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED98472575B20400CB3098 /* KBAppDelegate.m */; };
 		43ED984B2575B20400CB3098 /* ManBro.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 43ED98492575B20400CB3098 /* ManBro.xcdatamodeld */; };
 		43ED984D2575B20900CB3098 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43ED984C2575B20900CB3098 /* Assets.xcassets */; };
 		43ED98502575B20900CB3098 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43ED984E2575B20900CB3098 /* MainMenu.xib */; };
 		43ED98532575B20900CB3098 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED98522575B20900CB3098 /* main.m */; };
-		43ED98632575C3C500CB3098 /* NSPersistentContainer+sharedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED98622575C3C500CB3098 /* NSPersistentContainer+sharedContainer.m */; };
 		43ED986D2575E90D00CB3098 /* KBDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED986B2575E90D00CB3098 /* KBDocumentController.m */; };
 		43ED986E2575E90D00CB3098 /* KBDocumentController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43ED986C2575E90D00CB3098 /* KBDocumentController.xib */; };
 		43ED987B25762B7A00CB3098 /* KBDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED987A25762B7A00CB3098 /* KBDocument.m */; };
@@ -24,6 +32,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4326E19927439A0A00C82DEE /* CoreData+logging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CoreData+logging.m"; sourceTree = "<group>"; };
+		4326E19A27439A0A00C82DEE /* CoreData+logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CoreData+logging.h"; sourceTree = "<group>"; };
+		4326E1A227439A6800C82DEE /* NSPersistentContainer+sharedContainer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPersistentContainer+sharedContainer.m"; sourceTree = "<group>"; };
+		4326E1A327439A6800C82DEE /* NSPersistentContainer+sharedContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPersistentContainer+sharedContainer.h"; sourceTree = "<group>"; };
+		4326E1A527439C3B00C82DEE /* KBIndexManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBIndexManager.h; sourceTree = "<group>"; };
+		4326E1A627439C3B00C82DEE /* KBIndexManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBIndexManager.m; sourceTree = "<group>"; };
+		4326E1A827439C8500C82DEE /* KBTask_Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBTask_Protected.h; sourceTree = "<group>"; };
+		4326E1A927439CBC00C82DEE /* KBManPageTasks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBManPageTasks.h; sourceTree = "<group>"; };
+		4326E1AA27439CBC00C82DEE /* KBManPageTasks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBManPageTasks.m; sourceTree = "<group>"; };
 		434429D027391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentControllerSuggestionsPanel.m; sourceTree = "<group>"; };
 		434429D227391E5B00D222E7 /* KBDocumentController_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentController_Private.h; sourceTree = "<group>"; };
 		434429D3273923E600D222E7 /* KBDocumentLoading.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentLoading.h; sourceTree = "<group>"; };
@@ -31,6 +48,16 @@
 		434429D72739466500D222E7 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		435543C12578B46500B3A8ED /* KBTask.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBTask.h; sourceTree = "<group>"; };
 		435543C22578B46500B3A8ED /* KBTask.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = KBTask.mm; sourceTree = "<group>"; };
+		43C7BA582755956F00B5049B /* KBSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBSection.h; sourceTree = "<group>"; };
+		43C7BA592755956F00B5049B /* KBSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBSection.m; sourceTree = "<group>"; };
+		43C7BA6227559C0100B5049B /* NSManagedObject+convenience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+convenience.h"; sourceTree = "<group>"; };
+		43C7BA6327559C0100B5049B /* NSManagedObject+convenience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObject+convenience.m"; sourceTree = "<group>"; };
+		43C7BA652755A3EB00B5049B /* KBFilesystemObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBFilesystemObject.h; sourceTree = "<group>"; };
+		43C7BA682755A5E400B5049B /* KBFilesystemObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBFilesystemObject.m; sourceTree = "<group>"; };
+		43C7BA6A2760C3E100B5049B /* KBSearchManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBSearchManager.h; sourceTree = "<group>"; };
+		43C7BA6B2760C3E100B5049B /* KBSearchManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBSearchManager.m; sourceTree = "<group>"; };
+		43C7BA6E2760F84C00B5049B /* NSString+searchPredicateValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+searchPredicateValue.h"; sourceTree = "<group>"; };
+		43C7BA6F2760F84C00B5049B /* NSString+searchPredicateValue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+searchPredicateValue.m"; sourceTree = "<group>"; };
 		43ED98432575B20400CB3098 /* ManBro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ManBro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43ED98462575B20400CB3098 /* KBAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBAppDelegate.h; sourceTree = "<group>"; };
 		43ED98472575B20400CB3098 /* KBAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBAppDelegate.m; sourceTree = "<group>"; };
@@ -40,8 +67,6 @@
 		43ED98512575B20900CB3098 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		43ED98522575B20900CB3098 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		43ED98542575B20900CB3098 /* ManBro.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ManBro.entitlements; sourceTree = "<group>"; };
-		43ED98612575C3C500CB3098 /* NSPersistentContainer+sharedContainer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSPersistentContainer+sharedContainer.h"; sourceTree = "<group>"; };
-		43ED98622575C3C500CB3098 /* NSPersistentContainer+sharedContainer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSPersistentContainer+sharedContainer.m"; sourceTree = "<group>"; };
 		43ED986A2575E90D00CB3098 /* KBDocumentController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentController.h; sourceTree = "<group>"; };
 		43ED986B2575E90D00CB3098 /* KBDocumentController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentController.m; sourceTree = "<group>"; };
 		43ED986C2575E90D00CB3098 /* KBDocumentController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KBDocumentController.xib; sourceTree = "<group>"; };
@@ -69,6 +94,59 @@
 				434429D72739466500D222E7 /* UniformTypeIdentifiers.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		43C7BA5B275596E700B5049B /* Tasks */ = {
+			isa = PBXGroup;
+			children = (
+				435543C12578B46500B3A8ED /* KBTask.h */,
+				4326E1A827439C8500C82DEE /* KBTask_Protected.h */,
+				435543C22578B46500B3A8ED /* KBTask.mm */,
+				4326E1A927439CBC00C82DEE /* KBManPageTasks.h */,
+				4326E1AA27439CBC00C82DEE /* KBManPageTasks.m */,
+			);
+			path = Tasks;
+			sourceTree = "<group>";
+		};
+		43C7BA5C2755970200B5049B /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				43C7BA6E2760F84C00B5049B /* NSString+searchPredicateValue.h */,
+				43C7BA6F2760F84C00B5049B /* NSString+searchPredicateValue.m */,
+				4326E19A27439A0A00C82DEE /* CoreData+logging.h */,
+				4326E19927439A0A00C82DEE /* CoreData+logging.m */,
+				4326E1A327439A6800C82DEE /* NSPersistentContainer+sharedContainer.h */,
+				4326E1A227439A6800C82DEE /* NSPersistentContainer+sharedContainer.m */,
+				43C7BA6227559C0100B5049B /* NSManagedObject+convenience.h */,
+				43C7BA6327559C0100B5049B /* NSManagedObject+convenience.m */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		43C7BA5D2755971B00B5049B /* Entities */ = {
+			isa = PBXGroup;
+			children = (
+				43C7BA652755A3EB00B5049B /* KBFilesystemObject.h */,
+				43C7BA682755A5E400B5049B /* KBFilesystemObject.m */,
+				43ED987D25762B8800CB3098 /* KBPrefix.h */,
+				43ED987E25762B8800CB3098 /* KBPrefix.m */,
+				43C7BA582755956F00B5049B /* KBSection.h */,
+				43C7BA592755956F00B5049B /* KBSection.m */,
+				43ED987925762B7A00CB3098 /* KBDocument.h */,
+				43ED987A25762B7A00CB3098 /* KBDocument.m */,
+			);
+			path = Entities;
+			sourceTree = "<group>";
+		};
+		43C7BA5E2755972800B5049B /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				4326E1A527439C3B00C82DEE /* KBIndexManager.h */,
+				4326E1A627439C3B00C82DEE /* KBIndexManager.m */,
+				43C7BA6A2760C3E100B5049B /* KBSearchManager.h */,
+				43C7BA6B2760C3E100B5049B /* KBSearchManager.m */,
+			);
+			path = Managers;
 			sourceTree = "<group>";
 		};
 		43ED983A2575B20400CB3098 = {
@@ -102,14 +180,10 @@
 		43ED98662575E53B00CB3098 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				43ED98612575C3C500CB3098 /* NSPersistentContainer+sharedContainer.h */,
-				43ED98622575C3C500CB3098 /* NSPersistentContainer+sharedContainer.m */,
-				43ED987D25762B8800CB3098 /* KBPrefix.h */,
-				43ED987E25762B8800CB3098 /* KBPrefix.m */,
-				43ED987925762B7A00CB3098 /* KBDocument.h */,
-				43ED987A25762B7A00CB3098 /* KBDocument.m */,
-				435543C12578B46500B3A8ED /* KBTask.h */,
-				435543C22578B46500B3A8ED /* KBTask.mm */,
+				43C7BA5C2755970200B5049B /* Extensions */,
+				43C7BA5B275596E700B5049B /* Tasks */,
+				43C7BA5D2755971B00B5049B /* Entities */,
+				43C7BA5E2755972800B5049B /* Managers */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -221,15 +295,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4326E19D27439A0B00C82DEE /* CoreData+logging.m in Sources */,
 				43ED984B2575B20400CB3098 /* ManBro.xcdatamodeld in Sources */,
 				435543C32578B46500B3A8ED /* KBTask.mm in Sources */,
-				43ED98632575C3C500CB3098 /* NSPersistentContainer+sharedContainer.m in Sources */,
 				43ED986D2575E90D00CB3098 /* KBDocumentController.m in Sources */,
+				43C7BA6427559C0100B5049B /* NSManagedObject+convenience.m in Sources */,
+				43C7BA5A2755956F00B5049B /* KBSection.m in Sources */,
 				43ED987F25762B8800CB3098 /* KBPrefix.m in Sources */,
+				4326E1A727439C3B00C82DEE /* KBIndexManager.m in Sources */,
+				43C7BA692755A5E400B5049B /* KBFilesystemObject.m in Sources */,
+				4326E1AB27439CBC00C82DEE /* KBManPageTasks.m in Sources */,
 				43ED987B25762B7A00CB3098 /* KBDocument.m in Sources */,
+				4326E1A427439A6900C82DEE /* NSPersistentContainer+sharedContainer.m in Sources */,
 				43ED98532575B20900CB3098 /* main.m in Sources */,
+				43C7BA702760F84C00B5049B /* NSString+searchPredicateValue.m in Sources */,
 				434429D127391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m in Sources */,
 				434429D5273923E600D222E7 /* KBDocumentLoading.mm in Sources */,
+				43C7BA6C2760C3E100B5049B /* KBSearchManager.m in Sources */,
 				43ED98482575B20400CB3098 /* KBAppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -373,7 +455,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ru.byss.manbro.ManBro;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.byss.manbro;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -393,7 +475,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = ru.byss.manbro.ManBro;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.byss.manbro;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

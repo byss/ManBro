@@ -7,18 +7,22 @@
 
 #import "KBAppDelegate.h"
 
+#import "CoreData+logging.h"
+#import "KBIndexManager.h"
 #import "KBDocumentController.h"
+#import "NSPersistentContainer+sharedContainer.h"
 
-@interface KBAppDelegate ()
+@interface KBAppDelegate () {
+	KBIndexManager *_indexManager;
+	NSTimeInterval _prefixesScanTimestamp;
+}
+
 @end
 
-@implementation KBAppDelegate
 
-#if DEBUG
-- (void) applicationDidFinishLaunching: (NSNotification *) notification {
-	[self applicationOpenUntitledFile:notification.object];
-}
-#endif
+static NSString *const KBPrefixUpdateLastTimestampKey = @"lastPrefixesScanTimestamp";
+
+@implementation KBAppDelegate
 
 - (BOOL) applicationOpenUntitledFile: (NSApplication *) sender {
 	[[KBDocumentController new].window makeKeyAndOrderFront:sender];
@@ -27,6 +31,34 @@
 
 - (IBAction) newDocument: (id) sender {
 	[self applicationOpenUntitledFile:NSApp];
+}
+
+- (void) applicationDidBecomeActive: (NSNotification *) notification {
+	if ([self shouldScanPrefixesNow]) {
+		_indexManager = [KBIndexManager new];
+		[_indexManager.progress addObserver:self forKeyPath:@"fractionCompleted" options:0 context:NULL];
+		[_indexManager runWithCompletion:^{
+			NSTimeInterval const timestamp = [NSDate timeIntervalSinceReferenceDate];
+			NSUserDefaults *const defaults = [NSUserDefaults standardUserDefaults];
+			[defaults setDouble:timestamp forKey:KBPrefixUpdateLastTimestampKey];
+			[defaults synchronize];
+			self->_prefixesScanTimestamp = timestamp;
+			[self->_indexManager.progress removeObserver:self forKeyPath:@"fractionCompleted" context:NULL];
+			self->_indexManager = nil;
+		}];
+	}
+}
+
+- (BOOL) shouldScanPrefixesNow {
+	return !_indexManager && (!_prefixesScanTimestamp || (([NSDate timeIntervalSinceReferenceDate] - _prefixesScanTimestamp) > 3600.0));
+}
+
+- (void) observeValueForKeyPath: (NSString *) keyPath ofObject: (id) object change: (NSDictionary <NSKeyValueChangeKey, id> *) change context: (void *) context {
+	if ((object == _indexManager.progress) && [keyPath isEqualToString:@"fractionCompleted"]) {
+		NSLog (@"Progress: %.1f%%", _indexManager.progress.fractionCompleted * 100.0);
+	} else {
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+	}
 }
 
 #if 0
@@ -43,7 +75,7 @@
     
     NSError *error = nil;
     if (context.hasChanges && ![context save:&error]) {
-        // Customize this code block to include application-specific recovery steps.              
+        // Customize this code block to include application-specific recovery steps.
         [[NSApplication sharedApplication] presentError:error];
     }
 }

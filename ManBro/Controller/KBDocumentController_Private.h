@@ -24,6 +24,7 @@ typedef NS_ENUM(NSUInteger, KBDocumentRequestOptions) {
 @class KBDocumentControllerSuggestionsPanel;
 @protocol KBDocumentControllerSearchPanelDelegate <NSObject>
 
+@required
 - (void) searchPanel: (KBDocumentControllerSuggestionsPanel *) panel didRequestDocument: (KBDocument *) document options: (KBDocumentRequestOptions) options;
 
 @end

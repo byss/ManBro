@@ -19,34 +19,10 @@ typedef NS_ERROR_ENUM (KBTaskErrorDomain, KBTaskErrorCode) {
 	KBTaskInvalidOutputError = 3,
 };
 
-@protocol KBTaskResponseType <NSObject>
-
-+ (instancetype) createWithTaskResponse: (NSData *) responseData error: (NSError *__autoreleasing *__nullable) error;
-
-@end
-
 @interface KBTask <__covariant ResponseType>: NSObject
 
 - (void) startWithCompletion: (void (^)(ResponseType __nullable, NSError *__nullable)) completion;
 - (void) cancel;
-
-@end
-
-@interface KBManQueryTask: KBTask <NSArray <NSURL *> *>
-
-+ (instancetype) new NS_UNAVAILABLE;
-- (instancetype) init NS_UNAVAILABLE;
-
-- (instancetype) initWithQuery: (NSString *) query;
-
-@end
-
-@interface KBGenerateHTMLTask: KBTask <NSData *>
-
-+ (instancetype) new NS_UNAVAILABLE;
-- (instancetype) init NS_UNAVAILABLE;
-
-- (instancetype) initWithInputFileURL: (NSURL *) inputFileURL;
 
 @end
 

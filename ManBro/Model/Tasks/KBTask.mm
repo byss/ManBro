@@ -6,9 +6,10 @@
 //  Copyright © 2020 Kirill byss Bystrov. All rights reserved.
 //
 
-#import "KBTask.h"
+#import "KBTask_Protected.h"
 
 #include <paths.h>
+#include <os/log.h>
 #include <type_traits>
 #include <objc/runtime.h>
 
@@ -16,71 +17,22 @@ static NSErrorUserInfoKey const KBTaskErrorTaskKey = @"ru.byss.KBTask.Error.task
 static NSErrorUserInfoKey const KBTaskErrorTaskStdoutKey = @"ru.byss.KBTask.Error.stdout";
 static NSErrorUserInfoKey const KBTaskErrorTaskStderrKey = @"ru.byss.KBTask.Error.stderr";
 
-@interface KBTask <ResponseType> ()
+@interface KBTaskExecutableURLsCacheKey: NSObject <NSCopying>
 
-@property (nonatomic, readonly, class) Class <KBTaskResponseType> responseType;
+@property (nonatomic, readonly) NSString *path;
+@property (nonatomic, readonly) NSString *executableName;
 
-@property (nonatomic, copy) NSURL *executableURL;
-@property (nonatomic, copy) NSString *executableName;
-@property (nonatomic, copy) NSArray <NSString *> *arguments;
-@property (nonatomic, copy) NSMutableDictionary <NSString *, NSString *> *environment;
-@property (nonatomic, copy) NSURL *currentDirectoryURL;
++ (instancetype) new NS_UNAVAILABLE;
+- (instancetype) init NS_UNAVAILABLE;
 
-- (BOOL) canHandleExitCode: (int) exitCode;
-- (ResponseType) parseResponseData: (NSData *) responseData error: (NSError **) error;
-
-@end
-
-@interface KBManQueryTaskResponse: NSArray <KBTaskResponseType>
-@end
-
-@implementation KBManQueryTask
-
-+ (Class <KBTaskResponseType>) responseType {
-	return [KBManQueryTaskResponse class];
-}
-
-- (instancetype) init { return [self initWithQuery:(id __nonnull) nil]; }
-
-- (instancetype) initWithQuery: (NSString *) query {
-	if (!query.length) {
-		return nil;
-	}
-	
-	if (self = [super init]) {
-		self.executableName = @"man";
-		self.arguments = @[@"-aW", query];
-	}
-	return self;
-}
-
-- (BOOL) canHandleExitCode: (int) exitCode {
-	return (exitCode == 1) || [super canHandleExitCode:exitCode];
-}
-
-@end
-
-@implementation KBGenerateHTMLTask
-
-- (instancetype) init { return [self initWithInputFileURL:(id __nonnull) nil]; }
-
-- (instancetype) initWithInputFileURL: (NSURL *) inputFileURL {
-	if (self = [super init]) {
-		self.executableName = @"mandoc";
-		self.arguments = @[@"-T", @"html", @"-O", @"man=x-man-page://%S/%N", @"-O", @"fragment", @(inputFileURL.fileSystemRepresentation)];
-	}
-	return self;
-}
-
-- (id) parseResponseData: (NSData *) responseData error: (NSError *__autoreleasing *) error {
-	return responseData;
-}
+- (instancetype) initWithExecutableName: (NSString *) executableName path: (NSString *) path NS_DESIGNATED_INITIALIZER;
 
 @end
 
 @interface KBTask ()
 
 @property (nonatomic, readonly, class) dispatch_queue_t queue;
+@property (nonatomic, readonly, class) NSCache <KBTaskExecutableURLsCacheKey *, NSURL *> *executableURLsCache;
 @property (nonatomic, readonly, getter = isCancelled) BOOL cancelled;
 @property (nonatomic, readonly) NSTask *task;
 @property (nonatomic, readonly) dispatch_queue_t queue;
@@ -107,12 +59,18 @@ static id KBTaskErrorInfoValueProvider (NSError *error, NSErrorUserInfoKey key);
 	return queue;
 }
 
++ (NSCache <KBTaskExecutableURLsCacheKey *, NSURL *> *) executableURLsCache {
+	static auto const executableURLsCache = [NSCache new];
+	executableURLsCache.name = @"executableURLsCache";
+	return executableURLsCache;
+}
+
 + (NSURL *) searchExecutableNamed: (NSString *) name path: (NSString *) pathVarValue {
 	NSArray <NSString *> *paths = [pathVarValue componentsSeparatedByString:@":"];
 	for (NSString *path in paths) {
-		NSURL *const url = [[[NSURL alloc] initFileURLWithPath:path isDirectory:YES] URLByAppendingPathComponent:name];
-		NSDictionary <NSURLResourceKey, NSNumber *> *const values = [url resourceValuesForKeys:@[NSURLIsRegularFileKey, NSURLIsReadableKey, NSURLIsExecutableKey] error:NULL];
-		if ([values.allValues isEqualToArray:@[@YES, @YES, @YES]]) {
+		NSURL *const url = [[[NSURL alloc] initFileURLWithPath:path isDirectory:YES] URLByAppendingPathComponent:name isDirectory:NO];
+		NSDictionary <NSURLResourceKey, NSNumber *> *const values = [url resourceValuesForKeys:@[NSURLIsReadableKey, NSURLIsExecutableKey] error:NULL];
+		if ([values.allValues isEqualToArray:@[@YES, @YES]]) {
 			return url;
 		}
 	}
@@ -149,9 +107,49 @@ static id KBTaskErrorInfoValueProvider (NSError *error, NSErrorUserInfoKey key);
 	return [super forwardingTargetForSelector:aSelector];
 }
 
+- (void) determineExecutableURLWithCompletion: (void (^) (NSURL *)) completion {
+	static os_log_t const KBLog = os_log_create ("KBTask", "launch");
+	dispatch_async (self.class.queue, ^{
+		if (self.environment) {
+			self.task.environment = self.environment;
+		}
+		if (self.executableURL.absoluteString.length) {
+			completion (self.executableURL);
+		} else if (self.executableName.length) {
+			NSString *const path = self.environment [@"PATH"] ?: [NSProcessInfo processInfo].environment [@"PATH"] ?: @_PATH_DEFPATH;
+			KBTaskExecutableURLsCacheKey *const cacheKey = [[KBTaskExecutableURLsCacheKey alloc] initWithExecutableName:self.executableName path:path];
+			NSURL *executableURL = [self.class.executableURLsCache objectForKey:cacheKey];
+			if (!executableURL) {
+				if ((executableURL = [self.class searchExecutableNamed:self.executableName path:path])) {
+					[self.class.executableURLsCache setObject:executableURL forKey:cacheKey];
+				} else {
+					os_log_fault (KBLog, "executable '%{public}@' could not be located (PATH: %{public}@)", self.executableName, path);
+					abort ();
+				}
+			}
+			completion (executableURL);
+		} else {
+			os_log_fault (KBLog, "cannot start task because both executableURL and executableName are empty");
+			abort ();
+		}
+	});
+}
+
 - (dispatch_queue_t) queue {
 	if (!_queue) {
-		_queue = dispatch_queue_create_with_target ("KBTask", DISPATCH_QUEUE_SERIAL, self.class.queue);
+#if DEBUG
+		NSURL *const executableURL = self.task.executableURL.absoluteURL.standardizedURL;
+		char *name = NULL;
+		asprintf (&name, "KBTask: %s (%s)", executableURL.lastPathComponent.UTF8String, [executableURL URLByDeletingLastPathComponent].fileSystemRepresentation);
+#else
+#	define name "KBTask";
+#endif
+		_queue = dispatch_queue_create_with_target (name, DISPATCH_QUEUE_SERIAL, self.class.queue);
+#if DEBUG
+		free (name);
+#else
+#	undef name
+#endif
 	}
 	return _queue;
 }
@@ -166,6 +164,14 @@ static id KBTaskErrorInfoValueProvider (NSError *error, NSErrorUserInfoKey key);
 	_executableName = [executableName copy];
 }
 
+- (id) standardInput {
+	return self.task.standardInput;
+}
+
+- (void) setStandardInput: (id) standardInput {
+	self.task.standardInput = standardInput ?: [NSFileHandle fileHandleWithNullDevice];
+}
+
 - (void) cancel {
 	_cancelled = YES;
 	if (self.task.running) {
@@ -174,40 +180,25 @@ static id KBTaskErrorInfoValueProvider (NSError *error, NSErrorUserInfoKey key);
 }
 
 - (void) startWithCompletion: (void (^) (id, NSError *)) completion {
-	if (self.cancelled) {
-		return;
-	}
+	if (self.cancelled) { return; }
 	
-	dispatch_async (self.queue, ^{
-		if (self.environment) {
-			self.task.environment = self.environment;
-		}
-		if (self.executableURL) {
-			self.task.executableURL = self.executableURL;
-		} else if (self.executableName) {
-			NSString *const path = self.environment [@"PATH"] ?: [NSProcessInfo processInfo].environment [@"PATH"] ?: @_PATH_DEFPATH;
-			self.task.executableURL = [self.class searchExecutableNamed:self.executableName path:path];
-		}
+	[self determineExecutableURLWithCompletion:^(NSURL *executableURL) {
+		self.task.executableURL = executableURL;
 		
-		typeof (self) strongSelf = self;
-		self.task.terminationHandler = ^(NSTask *task) {
-			dispatch_sync (strongSelf.queue, ^{
-				[strongSelf terminationHandlerForTask:task completion:completion];
-			});
-		};
-		
-		NSError *error = nil;
-		[self.task launchAndReturnError:&error];
-		if (error) {
-			return completion (nil, error);
-		}
-		strongSelf->_outputData = [[self.task.standardOutput fileHandleForReading] readDataToEndOfFileAndReturnError:&error];
-		if (error) {
-			completion (nil, error);
-			self.task.terminationHandler = NULL;
-			[self.task terminate];
-		}
-	});
+		dispatch_async (self.queue, ^{
+			typeof (self) strongSelf = self;
+			self.task.terminationHandler = ^(NSTask *task) { dispatch_sync (strongSelf.queue, ^{ [strongSelf terminationHandlerForTask:task completion:completion]; }); };
+			NSError *error = nil;
+			[self.task launchAndReturnError:&error];
+			if (error) { return completion (nil, error); }
+			strongSelf->_outputData = [[self.task.standardOutput fileHandleForReading] readDataToEndOfFileAndReturnError:&error];
+			if (error) {
+				completion (nil, error);
+				self.task.terminationHandler = NULL;
+				[self.task terminate];
+			}
+		});
+	}];
 }
 
 - (void) terminationHandlerForTask: (NSTask *) task completion: (void (^) (id, NSError *)) completion {
@@ -263,49 +254,34 @@ static id KBTaskErrorInfoValueProvider (NSError *error, NSErrorUserInfoKey key);
 
 @end
 
-@interface KBManQueryTaskResponse () {
-	NSArray *_backing;
+@implementation KBTaskExecutableURLsCacheKey
+
+- (instancetype) init {
+	return [self initWithExecutableName:nil path:nil];
 }
 
-@end
-
-@implementation KBManQueryTaskResponse
-
-+ (instancetype) createWithTaskResponse: (NSData *) responseData error: (NSError *__autoreleasing *) error {
-	NSArray <NSString *> *const paths = [[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding] componentsSeparatedByString:@"\n"];
-	if (!paths) {
-		if (error) {
-			*error = [[NSError alloc] initWithDomain:NSCocoaErrorDomain code:NSFileReadCorruptFileError userInfo:nil];
-		}
+- (instancetype) initWithExecutableName: (NSString *) executableName path: (NSString *) path {
+	if (!(executableName.length && path.length)) {
 		return nil;
 	}
-	NSURL *urls [paths.count], *__strong *lastURL = urls;
-	bzero (urls, sizeof (NSURL *) * paths.count);
-	for (NSString *path in paths) {
-		if (!path.length) {
-			continue;
-		}
-		NSURL *url = [[NSURL alloc] initFileURLWithPath:path isDirectory:NO];
-		if (url) {
-			*lastURL++ = url;
-		}
-	}
-	KBManQueryTaskResponse *const response = paths ? [[self alloc] initWithObjects:urls count:lastURL - urls] : nil;
-	for (NSURL *__strong *url = urls; url < lastURL; url++) {
-		*url = nil;
-	}
-	return response;
-}
-
-- (instancetype) initWithObjects: (id const []) objects count: (NSUInteger) cnt {
 	if (self = [super init]) {
-		_backing = [[NSArray alloc] initWithObjects:objects count:cnt];
+		_executableName = [executableName copy];
+		_path = [path copy];
 	}
 	return self;
 }
 
-- (NSUInteger) count { return _backing.count; }
-- (id) objectAtIndex: (NSUInteger) index { return [_backing objectAtIndex:index]; }
+- (BOOL) isEqual: (KBTaskExecutableURLsCacheKey *) object {
+	return [object isKindOfClass:[KBTaskExecutableURLsCacheKey class]] && [self.executableName isEqualToString:object.executableName] && [self.path isEqualToString:object.path];
+}
+
+- (NSUInteger) hash {
+	return self.executableName.hash ^ (self.path.hash * 7);
+}
+
+- (id) copyWithZone: (NSZone *) zone {
+	return self;
+}
 
 @end
 

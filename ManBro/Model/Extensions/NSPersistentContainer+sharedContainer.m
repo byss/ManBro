@@ -8,6 +8,8 @@
 
 #import "NSPersistentContainer+sharedContainer.h"
 
+#import <os/log.h>
+
 NS_INLINE void NSPersistentContainerCreateSharedInstance (void *instance);
 
 @implementation NSPersistentContainer (sharedContainer)
@@ -37,11 +39,12 @@ NS_INLINE void NSPersistentContainerCreateSharedInstance (void *instance);
 	if ([storeType isEqualToString:NSInMemoryStoreType]) {
 		return nil;
 	}
-	return [[[NSPersistentContainer defaultDirectoryURL] URLByAppendingPathComponent:[NSBundle mainBundle].bundleIdentifier] URLByAppendingPathExtension:[self defaultURLExtensionForStoreType:storeType]];
+	return [[[self.class defaultDirectoryURL] URLByAppendingPathComponent:[NSBundle mainBundle].bundleIdentifier] URLByAppendingPathExtension:[self defaultURLExtensionForStoreType:storeType]];
 }
 
 - (NSPersistentStoreDescription *) defaultStoreOfType: (NSString *) storeType {
 	NSPersistentStoreDescription *const result = [[NSPersistentStoreDescription alloc] initWithURL:[self defaultURLForStoreType:storeType]];
+	result.type = storeType;
 	result.shouldAddStoreAsynchronously = NO;
 	result.shouldMigrateStoreAutomatically = YES;
 	result.shouldInferMappingModelAutomatically = YES;
@@ -56,21 +59,20 @@ NS_INLINE void NSPersistentContainerCreateSharedInstance (void *instance) {
 	result.persistentStoreDescriptions = @[sqliteStore];
 	[result loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *store, NSError *error) {
 		if (error) {
-			NSLog (@"Error opening persistent store at %@: %@", sqliteStore.URL, error);
-			NSLog (@"Using in-memory temporary store instead");
-			
+			os_log_t const log = os_log_create ("CoreData", "NSPersistentContainer");
+			os_log_fault (log, "Error opening persistent store at %{public}@: %{public}@", sqliteStore.URL, error);
 			result.persistentStoreDescriptions = @[[result defaultStoreOfType:NSInMemoryStoreType]];
 			[result loadPersistentStoresWithCompletionHandler:^(NSPersistentStoreDescription *store, NSError *error) {
 				if (error) {
-					NSCAssert (NO, @"Failed to initialize in-memory store: %@", error);
+					os_log_fault (log, "Failed to initialize in-memory store: %{public}@", error);
+					abort ();
 				} else {
-					result.viewContext.automaticallyMergesChangesFromParent = YES;
+					os_log (log, "Using in-memory temporary store instead");
 				}
 			}];
-		} else {
-			result.viewContext.automaticallyMergesChangesFromParent = YES;
 		}
 	}];
 	
+	result.viewContext.automaticallyMergesChangesFromParent = YES;
 	*((NSPersistentContainer *__strong *) instance) = result;
 }
