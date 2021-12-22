@@ -15,7 +15,7 @@ typedef id <NSObject, NSSecureCoding, NSCopying> NSURLGenerationIdentifier;
 @interface KBFilesystemObject: NSManagedObject
 
 @property (nonatomic, readonly, copy) NSURL *URL;
-@property (nonatomic, strong) NSURLGenerationIdentifier generationIdentifier;
+@property (nonatomic, copy, nullable) NSURLGenerationIdentifier generationIdentifier;
 
 @end
 

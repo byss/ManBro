@@ -12,13 +12,26 @@
 #import "KBDocumentController.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
+#define LOG_PROGRESS_TREE 0
+
 @interface KBAppDelegate () {
 	KBIndexManager *_indexManager;
 	NSTimeInterval _prefixesScanTimestamp;
+#if DEBUG
+	dispatch_queue_t _logQueue;
+	long _lastProgressPromille;
+#endif
 }
 
 @end
 
+#if DEBUG && LOG_PROGRESS_TREE
+@interface NSProgress (safeRecursiveDescription)
+
+@property (nonatomic, readonly) NSString *safeRecursiveDescription;
+
+@end
+#endif
 
 static NSString *const KBPrefixUpdateLastTimestampKey = @"lastPrefixesScanTimestamp";
 
@@ -36,15 +49,24 @@ static NSString *const KBPrefixUpdateLastTimestampKey = @"lastPrefixesScanTimest
 - (void) applicationDidBecomeActive: (NSNotification *) notification {
 	if ([self shouldScanPrefixesNow]) {
 		_indexManager = [KBIndexManager new];
+#if DEBUG
+		_logQueue = dispatch_queue_create ("IndexUpdateLogging", dispatch_queue_attr_make_with_qos_class (DISPATCH_QUEUE_SERIAL_WITH_AUTORELEASE_POOL, QOS_CLASS_USER_INITIATED, 0));
+		_lastProgressPromille = -1;
 		[_indexManager.progress addObserver:self forKeyPath:@"fractionCompleted" options:0 context:NULL];
+#endif
 		[_indexManager runWithCompletion:^{
-			NSTimeInterval const timestamp = [NSDate timeIntervalSinceReferenceDate];
-			NSUserDefaults *const defaults = [NSUserDefaults standardUserDefaults];
-			[defaults setDouble:timestamp forKey:KBPrefixUpdateLastTimestampKey];
-			[defaults synchronize];
-			self->_prefixesScanTimestamp = timestamp;
-			[self->_indexManager.progress removeObserver:self forKeyPath:@"fractionCompleted" context:NULL];
-			self->_indexManager = nil;
+			dispatch_async (dispatch_get_main_queue (), ^{
+				NSTimeInterval const timestamp = [NSDate timeIntervalSinceReferenceDate];
+				NSUserDefaults *const defaults = [NSUserDefaults standardUserDefaults];
+				[defaults setDouble:timestamp forKey:KBPrefixUpdateLastTimestampKey];
+				[defaults synchronize];
+				self->_prefixesScanTimestamp = timestamp;
+#if DEBUG
+				[self->_indexManager.progress removeObserver:self forKeyPath:@"fractionCompleted" context:NULL];
+				self->_logQueue = NULL;
+#endif
+				self->_indexManager = nil;
+			});
 		}];
 	}
 }
@@ -53,13 +75,28 @@ static NSString *const KBPrefixUpdateLastTimestampKey = @"lastPrefixesScanTimest
 	return !_indexManager && (!_prefixesScanTimestamp || (([NSDate timeIntervalSinceReferenceDate] - _prefixesScanTimestamp) > 3600.0));
 }
 
+#if DEBUG
 - (void) observeValueForKeyPath: (NSString *) keyPath ofObject: (id) object change: (NSDictionary <NSKeyValueChangeKey, id> *) change context: (void *) context {
 	if ((object == _indexManager.progress) && [keyPath isEqualToString:@"fractionCompleted"]) {
-		NSLog (@"Progress: %.1f%%", _indexManager.progress.fractionCompleted * 100.0);
+		double const progress = _indexManager.progress.fractionCompleted;
+		long const progressPromille = lrint (progress * 1000.0);
+		if (progressPromille != _lastProgressPromille) {
+			_lastProgressPromille = progressPromille;
+#	if LOG_PROGRESS_TREE
+			NSString *const description = _indexManager.progress.safeRecursiveDescription;
+#	endif
+			dispatch_async (_logQueue, ^{
+				NSLog (@"Progress: %.1f%%", progress * 100.0);
+#	if LOG_PROGRESS_TREE
+				NSLog (@"%@", description);
+#	endif
+			});
+		}
 	} else {
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 	}
 }
+#endif
 
 #if 0
 
@@ -129,3 +166,32 @@ static NSString *const KBPrefixUpdateLastTimestampKey = @"lastPrefixesScanTimest
 #endif
 
 @end
+
+#if DEBUG && LOG_PROGRESS_TREE
+
+#import <objc/runtime.h>
+
+@implementation NSProgress (safeRecursiveDescription)
+
+- (NSSet <NSProgress *> *) safeChildren {
+	static Ivar childrenIvar;
+	static dispatch_once_t onceToken;
+	dispatch_once (&onceToken, ^{ childrenIvar = class_getInstanceVariable ([NSProgress class], "_children"); });
+	return [object_getIvar (self, childrenIvar) copy];
+}
+
+- (NSString *)  safeRecursiveDescription {
+	return [self safeRecursiveDescriptionWithLevel:0];
+}
+
+- (NSString *)  safeRecursiveDescriptionWithLevel: (int) level {
+	NSMutableString *result = [[NSMutableString alloc] initWithFormat:@"%*s<%@: %p>: Fraction completed: %.4f / Completed: %ld of %ld", level * 2, "", self.class, self, self.fractionCompleted, (long) self.completedUnitCount, (long) self.totalUnitCount];
+	NSSet <NSProgress *> *const children = self.safeChildren;
+	for (NSProgress *child in children) {
+		[result appendFormat:@"\n%@", [child safeRecursiveDescriptionWithLevel:level + 1]];
+	}
+	return result;
+}
+
+@end
+#endif

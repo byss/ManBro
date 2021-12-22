@@ -17,16 +17,15 @@ extern KBPrefixSource const KBPrefixSourceHeuristic;
 extern KBPrefixSource const KBPrefixSourceUser;
 
 @class KBSection;
-@class KBDocument;
+@class KBDocumentMeta;
 @interface KBPrefix: KBFilesystemObject
 
 @property (nonatomic, assign) NSUInteger priority;
 @property (nonatomic, copy) KBPrefixSource source;
 @property (nonatomic, copy) NSURL *URL;
 @property (nonatomic, strong) NSSet <KBSection *> *sections;
-@property (nonatomic, readonly) NSSet <KBDocument *> *documents;
+@property (nonatomic, readonly) NSSet <KBDocumentMeta *> *documents;
 
-+ (NSArray <KBPrefix *> *) fetchInContext: (NSManagedObjectContext *) context;
 + (void) fetchInContext: (NSManagedObjectContext *) context completion: (void (^) (NSArray <KBPrefix *> *)) completion;
 + (KBPrefix *) fetchPrefixWithURL: (NSURL *) url createIfNeeded: (BOOL) createIfNeeded context: (NSManagedObjectContext *) context;
 

@@ -20,12 +20,12 @@ typedef NS_ENUM(NSUInteger, KBDocumentRequestOptions) {
 	KBOpenForegroundWindow = KBDocumentBecomesCurrent | KBCreateDocumentWindow,
 };
 
-@class KBDocument;
+@class KBDocumentMeta;
 @class KBDocumentControllerSuggestionsPanel;
 @protocol KBDocumentControllerSearchPanelDelegate <NSObject>
 
 @required
-- (void) searchPanel: (KBDocumentControllerSuggestionsPanel *) panel didRequestDocument: (KBDocument *) document options: (KBDocumentRequestOptions) options;
+- (void) searchPanel: (KBDocumentControllerSuggestionsPanel *) panel didRequestDocument: (KBDocumentMeta *) document options: (KBDocumentRequestOptions) options;
 
 @end
 

@@ -28,23 +28,21 @@
 	return result;
 }
 
-+ (NSFetchRequest *) fetchRequestWithURL: (NSURL *) url {
-	return [self fetchRequestFromTemplateWithName:@"FetchPrefixWithURL" substitutionVariables:KBVariables (url)];
-}
-
-+ (NSArray <KBPrefix *> *) fetchInContext: (NSManagedObjectContext *) context {
-	return [context executeFetchRequest:[self fetchRequest]];
-}
-
 + (void) fetchInContext: (NSManagedObjectContext *) context completion: (void (^)(NSArray <KBPrefix *> *)) completion {
 	[context executeFetchRequest:[self fetchRequest] completion:completion];
 }
 
 + (instancetype) fetchPrefixWithURL: (NSURL *) URL createIfNeeded: (BOOL) createIfNeeded context: (NSManagedObjectContext *) context {
+	static NSArray <NSString *> *properties = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once (&onceToken, ^{
+		properties = [self validatedArrayOfPropertyNames:@[@"url"]];
+	});
+
 	URL = URL.absoluteURL.standardizedURL;
-	KBPrefix *result = [context executeFetchRequest:[self fetchRequestWithURL:URL]].firstObject;
+	KBPrefix *result = [self fetchUniqueObjectWithValues:@[URL] forPropertiesNamed:properties inContext:context];
 	if (!result && createIfNeeded) {
-		result = [[KBPrefix alloc] initWithContext:context];
+		result = [[self alloc] initWithContext:context];
 		result.URL = URL;
 	}
 	return result;

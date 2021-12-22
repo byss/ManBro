@@ -142,7 +142,7 @@ static id KBTaskErrorInfoValueProvider (NSError *error, NSErrorUserInfoKey key);
 		char *name = NULL;
 		asprintf (&name, "KBTask: %s (%s)", executableURL.lastPathComponent.UTF8String, [executableURL URLByDeletingLastPathComponent].fileSystemRepresentation);
 #else
-#	define name "KBTask";
+#	define name "KBTask"
 #endif
 		_queue = dispatch_queue_create_with_target (name, DISPATCH_QUEUE_SERIAL, self.class.queue);
 #if DEBUG

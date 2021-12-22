@@ -16,4 +16,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface NSManagedObject (staleObjectsPredicate)
+
+@property (nonatomic, readonly, nullable, class) NSPredicate *staleObjectsPredicate;
+
+@end
+
 NS_ASSUME_NONNULL_END

@@ -8,7 +8,7 @@
 
 #import <WebKit/WKURLSchemeHandler.h>
 
-#import "KBDocument.h"
+#import "KBDocumentMeta.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface KBDocument (KBDocumentLoader)
+@interface KBDocumentMeta (KBDocumentLoader)
 
 @property (nonatomic, readonly, nullable) NSURL *loaderURI;
 

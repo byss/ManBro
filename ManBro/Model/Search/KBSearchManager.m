@@ -14,10 +14,11 @@
 
 #import "CoreData+logging.h"
 #import "NSString+searchPredicateValue.h"
+#import "NSComparisonPredicate+convenience.h"
 #import "NSPersistentContainer+sharedContainer.h"
 #import "KBPrefix.h"
 #import "KBSection.h"
-#import "KBDocument.h"
+#import "KBDocumentMeta.h"
 
 @interface KBSearchQuery ()
 
@@ -65,17 +66,31 @@
 	return atomic_load_explicit (&_operationToken, memory_order_acquire);
 }
 
+- (NSArray <KBDocumentMeta *> *) executeDocumentsFetchRequest: (NSFetchRequest *) request {
+	return [[self.context executeFetchRequest:request] sortedArrayUsingComparator:^NSComparisonResult (KBDocumentMeta *lhs, KBDocumentMeta *rhs) {
+		NSUInteger const lhsPrefixPrio = lhs.prefix.priority, rhsPrefixPrio = rhs.prefix.priority;
+		if (lhsPrefixPrio < rhsPrefixPrio) { return NSOrderedAscending; }
+		if (lhsPrefixPrio > rhsPrefixPrio) { return NSOrderedDescending; }
+		NSComparisonResult const sectionNameComparisonResult = [lhs.section.name compare:rhs.section.name];
+		if (sectionNameComparisonResult != NSOrderedSame) { return sectionNameComparisonResult; }
+		NSUInteger const lhsTitleLength = lhs.title.length, rhsTitleLength = rhs.title.length;
+		if (lhsTitleLength < rhsTitleLength) { return NSOrderedAscending; }
+		if (lhsTitleLength > rhsTitleLength) { return NSOrderedDescending; }
+		return [lhs.title compare:rhs.title];
+	}];
+}
+
 - (void) fetchDocumentsMatchingQuery: (KBSearchQuery *) searchQuery completion:(void (^)(NSArray <id <NSFetchedResultsSectionInfo>> *)) completion {
 	NSUInteger const operationToken = atomic_fetch_add_explicit (&_operationToken, 1, memory_order_relaxed) + 1;
 	if (!searchQuery) { return completion (@[]); }
 
 	__block NSMutableArray <KBFetchedResultsSectionInfo *> *const result = [[NSMutableArray alloc] initWithCapacity:2];
 	[self operation:operationToken runStep:^{
-		KBFetchedResultsSectionInfo *const exactMatches = [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Exact matches", @"") objects:[self.context executeFetchRequest:[searchQuery newFetchRequestForExactMatches]]];
+		KBFetchedResultsSectionInfo *const exactMatches = [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Exact matches", @"") objects:[self executeDocumentsFetchRequest:[searchQuery newFetchRequestForExactMatches]]];
 		exactMatches ? [result addObject:exactMatches] : (void) 0;
 	} completion:^{
 		[self operation:operationToken runStep:^{
-			KBFetchedResultsSectionInfo *const partialMatches = [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Patial matches", @"") objects:[self.context executeFetchRequest:[searchQuery newFetchRequestForPartialMatches]]];
+			KBFetchedResultsSectionInfo *const partialMatches = [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Partial matches", @"") objects:[self executeDocumentsFetchRequest:[searchQuery newFetchRequestForPartialMatches]]];
 			partialMatches ? [result addObject:partialMatches] : (void) 0;
 		} completion:^{
 			completion (result);
@@ -105,13 +120,6 @@
 @protected
 	NSString *_text, *_searchPredicateTextValue;
 }
-
-@end
-
-@interface NSComparisonPredicate (convenience)
-
-- (instancetype) initTemplateWithType: (NSPredicateOperatorType) type modifier: (NSComparisonPredicateModifier) modifier options: (NSComparisonPredicateOptions) options forKeyPath: (NSString *) keyPath;
-- (instancetype) initTemplateWithType: (NSPredicateOperatorType) type modifier: (NSComparisonPredicateModifier) modifier options: (NSComparisonPredicateOptions) options forKeyPath: (NSString *) keyPath variableName: (NSString *) variableName;
 
 @end
 
@@ -194,13 +202,13 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 	static NSPredicate *singlePrefixSubpredicateTemplate, *prefixesSubpredicateTemplate, *singleSectionSubpredicateTemplate, *sectionsSubpredicateTemplate;
 	static dispatch_once_t onceToken;
 	dispatch_once (&onceToken, ^{
-		singlePrefixSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSEqualToPredicateOperatorType modifier:NSDirectPredicateModifier options:0 forKeyPath:@"section.prefix" variableName:@"prefix"];
-		prefixesSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSInPredicateOperatorType modifier:NSDirectPredicateModifier options:0 forKeyPath:@"section.prefix" variableName:@"prefixes"];
-		singleSectionSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSEqualToPredicateOperatorType modifier:NSDirectPredicateModifier options:0 forKeyPath:@"section"];
-		sectionsSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSInPredicateOperatorType modifier:NSDirectPredicateModifier options:0 forKeyPath:@"section" variableName:@"sections"];
+		singlePrefixSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSEqualToPredicateOperatorType forKeyPath:@"section.prefix" variableName:@"prefix"];
+		prefixesSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSInPredicateOperatorType forKeyPath:@"section.prefix" variableName:@"prefixes"];
+		singleSectionSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSEqualToPredicateOperatorType forKeyPath:@"section"];
+		sectionsSubpredicateTemplate = [[NSComparisonPredicate alloc] initTemplateWithType:NSInPredicateOperatorType forKeyPath:@"section" variableName:@"sections"];
 	});
 	
-	NSFetchRequest *const result = [KBDocument fetchRequest];
+	NSFetchRequest *const result = [KBDocumentMeta fetchRequest];
 	NSPredicate *const titleSubpredicate = [titleSubpredicateTemplate predicateWithSubstitutionVariables:@{@"title": self.searchPredicateTextValue}];
 	if (self.prefixes || self.sections) {
 		NSMutableArray <NSPredicate *> *const subpredicates = [[NSMutableArray alloc] initWithCapacity:3];
@@ -251,7 +259,10 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 	static NSPredicate *titleSubpredicateTemplate;
 	static dispatch_once_t onceToken;
 	dispatch_once (&onceToken, ^{
-		titleSubpredicateTemplate = [self titleComparisonPredicateWithOperatorType:NSContainsPredicateOperatorType];
+		NSMutableArray <NSPredicate *> *const subpredicates = [[NSMutableArray alloc] initWithCapacity:2];
+		[subpredicates addObject:[self titleComparisonPredicateWithOperatorType:NSContainsPredicateOperatorType]];
+		[subpredicates addObject:[self titleComparisonPredicateWithOperatorType:NSNotEqualToPredicateOperatorType]];
+		titleSubpredicateTemplate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:subpredicates];
 	});
 	NSFetchRequest *const result = [self newFetchRequestWithTitleSubpredicateTemplate:titleSubpredicateTemplate];
 	if (result.resultType == NSManagedObjectResultType) {
@@ -381,18 +392,6 @@ static NSFetchRequest *KBSearchQueryCachingFetchRequestGetter (KBSearchQueryI *c
 - (NSFetchRequest *) newFetchRequestForPartialMatches {
 	NSParameterAssert (self.searchPredicateTextValue.length);
 	return [super newFetchRequestForPartialMatches];
-}
-
-@end
-
-@implementation NSComparisonPredicate (convenience)
-
-- (instancetype) initTemplateWithType: (NSPredicateOperatorType) type modifier: (NSComparisonPredicateModifier) modifier options: (NSComparisonPredicateOptions) options forKeyPath: (NSString *) keyPath {
-	return [self initTemplateWithType:type modifier:modifier options:options forKeyPath:keyPath variableName:keyPath];
-}
-
-- (instancetype) initTemplateWithType: (NSPredicateOperatorType) type modifier: (NSComparisonPredicateModifier) modifier options: (NSComparisonPredicateOptions) options forKeyPath: (NSString *) keyPath variableName: (NSString *) variableName {
-	return [self initWithLeftExpression:[NSExpression expressionForKeyPath:keyPath] rightExpression:[NSExpression expressionForVariable:variableName] modifier:modifier type:type options:options];
 }
 
 @end

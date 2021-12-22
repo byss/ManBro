@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="21A559" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
-    <entity name="Document" representedClassName="KBDocument" syncable="YES">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19574" systemVersion="21A559" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+    <entity name="DocumentContent" representedClassName="KBDocumentContent" syncable="YES">
         <attribute name="generationIdentifier" attributeType="Binary"/>
-        <attribute name="html" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="html" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <relationship name="meta" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DocumentMeta" inverseName="content" inverseEntity="DocumentMeta"/>
+    </entity>
+    <entity name="DocumentMeta" representedClassName="KBDocumentMeta" syncable="YES">
+        <attribute name="filename" optional="YES" attributeType="String"/>
+        <attribute name="generationIdentifier" optional="YES" attributeType="Binary"/>
         <attribute name="normalizedTitle" attributeType="String" minValueString="1"/>
         <attribute name="title" attributeType="String" minValueString="1"/>
+        <relationship name="content" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DocumentContent" inverseName="meta" inverseEntity="DocumentContent"/>
         <relationship name="section" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Section" inverseName="documents" inverseEntity="Section"/>
         <fetchIndex name="byTitleAndSectionIndex">
             <fetchIndexElement property="title" type="Binary" order="ascending"/>
@@ -13,51 +19,32 @@
         <fetchIndex name="byNormalizedTitleIndex">
             <fetchIndexElement property="normalizedTitle" type="Binary" order="ascending"/>
         </fetchIndex>
-        <uniquenessConstraints>
-            <uniquenessConstraint>
-                <constraint value="title"/>
-                <constraint value="section"/>
-            </uniquenessConstraint>
-        </uniquenessConstraints>
     </entity>
     <entity name="Prefix" representedClassName="KBPrefix" syncable="YES">
-        <attribute name="generationIdentifier" attributeType="Binary"/>
+        <attribute name="generationIdentifier" optional="YES" attributeType="Binary"/>
         <attribute name="priority" attributeType="Integer 64" minValueString="0" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="source" attributeType="String"/>
         <attribute name="url" attributeType="URI"/>
         <relationship name="sections" toMany="YES" deletionRule="Cascade" destinationEntity="Section" inverseName="prefix" inverseEntity="Section"/>
         <fetchedProperty name="documents" optional="YES">
-            <fetchRequest name="fetchedPropertyFetchRequest" entity="Document" predicateString="section.prefix == $FETCH_SOURCE"/>
+            <fetchRequest name="fetchedPropertyFetchRequest" entity="DocumentMeta" predicateString="section.prefix == $FETCH_SOURCE"/>
         </fetchedProperty>
         <fetchIndex name="byURLIndex">
             <fetchIndexElement property="url" type="Binary" order="ascending"/>
         </fetchIndex>
-        <uniquenessConstraints>
-            <uniquenessConstraint>
-                <constraint value="url"/>
-            </uniquenessConstraint>
-        </uniquenessConstraints>
     </entity>
     <entity name="Section" representedClassName="KBSection" syncable="YES">
-        <attribute name="generationIdentifier" attributeType="Binary"/>
-        <attribute name="name" attributeType="String"/>
-        <relationship name="documents" toMany="YES" deletionRule="Cascade" destinationEntity="Document" inverseName="section" inverseEntity="Document"/>
+        <attribute name="generationIdentifier" optional="YES" attributeType="Binary"/>
+        <attribute name="name" optional="YES" attributeType="String" minValueString="1"/>
+        <relationship name="documents" toMany="YES" deletionRule="Cascade" destinationEntity="DocumentMeta" inverseName="section" inverseEntity="DocumentMeta"/>
         <relationship name="prefix" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Prefix" inverseName="sections" inverseEntity="Prefix"/>
         <fetchIndex name="byNameIndex">
             <fetchIndexElement property="name" type="Binary" order="ascending"/>
         </fetchIndex>
-        <uniquenessConstraints>
-            <uniquenessConstraint>
-                <constraint value="name"/>
-                <constraint value="prefix"/>
-            </uniquenessConstraint>
-        </uniquenessConstraints>
     </entity>
-    <fetchRequest name="FetchDocumentByTitle" entity="Document" predicateString="title == $title AND section == $section" fetchLimit="1" returnObjectsAsFaults="YES"/>
-    <fetchRequest name="FetchPrefixWithURL" entity="Prefix" predicateString="url == $url" fetchLimit="1" returnObjectsAsFaults="YES"/>
-    <fetchRequest name="FetchSectionByName" entity="Section" predicateString="prefix == $prefix &amp;&amp; name == $name" fetchLimit="1" returnObjectsAsFaults="YES"/>
     <elements>
-        <element name="Document" positionX="-63" positionY="-18" width="128" height="104"/>
+        <element name="DocumentContent" positionX="-54" positionY="45" width="128" height="74"/>
+        <element name="DocumentMeta" positionX="-63" positionY="-18" width="128" height="119"/>
         <element name="Prefix" positionX="-54" positionY="18" width="128" height="125"/>
         <element name="Section" positionX="-63" positionY="27" width="128" height="89"/>
     </elements>

@@ -21,7 +21,7 @@
 
 @end
 
-@implementation KBDocument (KBDocumentLoader)
+@implementation KBDocumentMeta (KBDocumentLoader)
 
 - (NSURL *) loaderURI {
 	NSManagedObjectID *const objectID = self.objectID;
@@ -85,7 +85,7 @@
 	NSPersistentContainer *const container = [NSPersistentContainer sharedContainer];
 	[container performBackgroundTask:^(NSManagedObjectContext *ctx) {
 		if (isCancelledBlock ()) { return; }
-		KBDocument *const document = [ctx objectWithID:objectID];
+		KBDocumentMeta *const document = [ctx objectWithID:objectID];
 		if (document.html) {
 			return completion ([[KBBundledData alloc] initWithType:UTTypeHTML chunks:preHTML.data, document.html, postHTML.data, nil]);
 		}
@@ -96,9 +96,9 @@
 			if (error) {
 				return completion ([[KBBundledData alloc] initWithError:error]);
 			}
-			[container performBackgroundTask:^(NSManagedObjectContext *ctx) {
-				KBDocument *const document = [ctx objectWithID:objectID];
-				document.html = result;
+			[ctx performBlock:^{
+				KBDocumentMeta *const meta = [ctx objectWithID:objectID];
+				[meta setContentHTML:result];
 				NSError *error = nil;
 				[ctx save:&error];
 

@@ -13,13 +13,11 @@
 #import <WebKit/WKWebViewConfiguration.h>
 
 #import "KBTask.h"
+#import "KBSection.h"
+#import "KBPrefix.h"
+#import "NSObject+abstract.h"
 #import "KBDocumentLoading.h"
 #import "NSPersistentContainer+sharedContainer.h"
-
-#define KB_ABSTRACT { \
-	[self doesNotRecognizeSelector:_cmd]; \
-	__builtin_unreachable (); \
-}
 
 @interface KBDocumentController (NSWindowDelegate) <NSWindowDelegate>
 @end
@@ -40,7 +38,7 @@
 
 @interface KBDocumentController (documentLoading)
 
-- (void) loadDocument: (KBDocument *) document;
+- (void) loadDocument: (KBDocumentMeta *) document;
 
 @end
 
@@ -92,18 +90,20 @@ static NSMutableSet <KBDocumentController *> *KBDocumentControllerInstances = ni
 @implementation KBDocumentController (suggestionsPanelManagement)
 
 - (void) setSearchSheetHidden: (BOOL) searchSheetHidden {
-	if (!searchSheetHidden == !self.documentSuggestionsPanel) {
-		if (searchSheetHidden) {
-			[self.window removeChildWindow:self.documentSuggestionsPanel];
-			[self.documentSuggestionsPanel close];
-			self.documentSuggestionsPanel = nil;
-		} else {
-			KBDocumentControllerSuggestionsPanel *const panel = [KBDocumentControllerSuggestionsPanel new];
-			panel.navigationDelegate = self;
-			self.documentSuggestionsPanel = panel;
-			[self.window addChildWindow:panel ordered:NSWindowAbove];
-			[self updateDocumentsSuggestionsPanelPosition];
-		}
+	if (!searchSheetHidden != !self.documentSuggestionsPanel) { return; }
+
+	if (searchSheetHidden) {
+		[[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidResizeNotification object:self.documentSuggestionsPanel];
+		[self.window removeChildWindow:self.documentSuggestionsPanel];
+		[self.documentSuggestionsPanel close];
+		self.documentSuggestionsPanel = nil;
+	} else {
+		KBDocumentControllerSuggestionsPanel *const panel = [KBDocumentControllerSuggestionsPanel new];
+		panel.navigationDelegate = self;
+		self.documentSuggestionsPanel = panel;
+		[self.window addChildWindow:panel ordered:NSWindowAbove];
+		[self updateDocumentsSuggestionsPanelPosition];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (updateDocumentsSuggestionsPanelPosition) name:NSWindowDidResizeNotification object:self.documentSuggestionsPanel];
 	}
 }
 
@@ -124,7 +124,10 @@ static NSMutableSet <KBDocumentController *> *KBDocumentControllerInstances = ni
 
 @implementation KBDocumentController (documentLoading)
 
-- (void) loadDocument: (KBDocument *) document {
+- (void) loadDocument: (KBDocumentMeta *) document {
+	self.window.title = [[NSString alloc] initWithFormat:@"%@ (%@)", document.title, document.section.name];
+	self.window.representedURL = document.URL;
+	self.window.tab.toolTip = @(document.URL.fileSystemRepresentation);
 	[self.webView loadRequest:[[NSURLRequest alloc] initWithURL:document.loaderURI]];
 }
 
@@ -196,7 +199,7 @@ static NSMutableSet <KBDocumentController *> *KBDocumentControllerInstances = ni
 
 @implementation KBDocumentController (KBDocumentControllerSuggestionsPanelDelegate)
 
-- (void) searchPanel: (KBDocumentControllerSuggestionsPanel *) panel didRequestDocument: (KBDocument *) document options: (KBDocumentRequestOptions) options {
+- (void) searchPanel: (KBDocumentControllerSuggestionsPanel *) panel didRequestDocument: (KBDocumentMeta *) document options: (KBDocumentRequestOptions) options {
 	[self setSearchSheetHidden:YES];
 	[self.searchItem.searchField endEditing:self.searchItem.searchField.currentEditor];
 	

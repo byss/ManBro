@@ -16,7 +16,13 @@ NSDictionary <NSString *, id> *_KBVariables (NSString *keysString, ...);
 
 @interface NSManagedObject (convenience)
 
++ (NSArray <NSString *> *__nullable) validatedArrayOfPropertyNames: (NSArray <NSString *> *) sourceArray;
++ (NSFetchRequest *) fetchRequestForObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames; 
+
 + (NSFetchRequest *) fetchRequestFromTemplateWithName: (NSString *) templateName substitutionVariables: (NSDictionary <NSString *, id> *) variables;
+
++ (NSArray *) fetchObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames inContext: (NSManagedObjectContext *) context;
++ (instancetype __nullable) fetchUniqueObjectWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames inContext: (NSManagedObjectContext *) context;
 
 - (id) valueForKey: (NSString *) key notifyObservers: (BOOL) notifyObservers;
 - (id) valueForKey: (NSString *) key notifyObservers: (BOOL) notifyObservers transform: (id (^NS_NOESCAPE __nullable) (id)) transform;
