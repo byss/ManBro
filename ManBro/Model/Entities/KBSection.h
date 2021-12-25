@@ -18,7 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSSet <KBDocumentMeta *> *documents;
 @property (nonatomic, strong) KBPrefix *prefix;
 
-+ (KBSection *__nullable) fetchSectionNamed: (NSString *) sectionName prefix: (KBPrefix *) prefix createIfNeeded: (BOOL) createIfNeeded;
++ (instancetype __nullable) fetchSectionNamed: (NSString *) sectionName prefix: (KBPrefix *) prefix createIfNeeded: (BOOL) createIfNeeded;
++ (NSArray <__kindof KBSection *> *) fetchSectionsNamed: (NSString *) sectionName inContext: (NSManagedObjectContext *) context;
 
 @end
 

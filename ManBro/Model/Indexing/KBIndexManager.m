@@ -9,7 +9,9 @@
 #import "KBIndexManager.h"
 
 #import "KBManPageTasks.h"
+#import "NSURL+filesystem.h"
 #import "CoreData+logging.h"
+#import "NSObject+abstract.h"
 #import "NSPersistentContainer+sharedContainer.h"
 #import "KBPrefix.h"
 #import "KBSection.h"
@@ -120,7 +122,7 @@
 		NSMutableSet <NSURL *> *result = [NSMutableSet new];
 		for (id <KBPrefixUpdateHeuristic> heuristic in KBPrefixUpdateHeuristic.allHeuristics) {
 			for (NSURL *requestedURL in heuristic.requestedURLs) {
-				[result addObject:requestedURL];
+				[result addObject:requestedURL.absoluteURL.standardizedURL];
 			}
 		}
 		heuristicURLs = [[NSSet alloc] initWithSet:result];
@@ -166,9 +168,36 @@
 
 @end
 
+typedef NS_ENUM (NSInteger, KBPrefixUpdateHeuristicPathCheckingResult) {
+	KBPrefixUpdateHeuristicContinuePathEnumeraration = -1,
+	KBPrefixUpdateHeuristicIgnorePathAndDescendants = 0,
+	KBPrefixUpdateHeuristicPossiblePrefixPathRecognized = 1,
+};
+
+@interface KBDynamicPrefixUpdateHeuristic: KBPrefixUpdateHeuristic
+
+@property (nonatomic, readonly) NSURL *rootURL;
+
+- (instancetype) initWithName: (NSString *) name rootURL: (NSURL *) rootURL descendantsPredicate: (KBPrefixUpdateHeuristicPathCheckingResult (^) (NSArray <NSString *> *pathComponents)) descendantsPredicate NS_DESIGNATED_INITIALIZER;
+
+@end
+
+NS_INLINE KBPrefixUpdateHeuristicPathCheckingResult KBPrefixUpdateHeuristicHomebrewPredicate (NSArray <NSString *> *pathComponents);
+
+#import <objc/runtime.h>
+
+static __unsafe_unretained Class KBPrefixUpdateHeuristicClass;
+
+static void KBPrefixUpdateHeuristicClassInit (void *context) { KBPrefixUpdateHeuristicClass = (__bridge Class) context; }
+
 @implementation KBPrefixUpdateHeuristic
 
-@synthesize name = _name, requestedURLs = _requestedURLs;
+@synthesize name = _name;
+
++ (void) load {
+	static dispatch_once_t onceToken;
+	dispatch_once_f (&onceToken, (__bridge void *) self, KBPrefixUpdateHeuristicClassInit);
+}
 
 + (NSSet <id <KBPrefixUpdateHeuristic>> *) allHeuristics {
 	static NSSet <id <KBPrefixUpdateHeuristic>> *allHeuristics;
@@ -180,50 +209,116 @@
 			 [[NSURL alloc] initFileURLWithPath:@"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/share/man" isDirectory:YES],
 			 nil],
 			[[self alloc] initWithName:@"local" requestedURLs:[[NSURL alloc] initFileURLWithPath:@"/usr/local/share/man" isDirectory:YES], nil],
+			[[KBDynamicPrefixUpdateHeuristic alloc] initWithName:@"Homebrew" rootURL:[[NSURL alloc] initFileURLWithPath:@"/usr/local/Cellar" isDirectory:YES] descendantsPredicate:^(NSArray <NSString *> *pathComponents) { return KBPrefixUpdateHeuristicHomebrewPredicate (pathComponents); }],
 		};
 		allHeuristics = [[NSSet alloc] initWithObjects:heuristics count:sizeof (heuristics) / sizeof (id)];
 	});
 	return allHeuristics;
 }
 
++ (BOOL) isHeuristicSubclass { return self != KBPrefixUpdateHeuristicClass; }
+
++ (instancetype) allocWithZone: (NSZone *) zone {
+	return self.isHeuristicSubclass ? [super allocWithZone:zone] : class_createInstance (self, sizeof (id));
+}
+
+- (BOOL) isHeuristicSubclass { return object_getClass (self) != KBPrefixUpdateHeuristicClass; }
+
 - (instancetype) init {
 	return [self initWithName:nil requestedURLs:nil];
 }
 
 - (instancetype) initWithName: (NSString *) name requestedURLs: (NSURL *) url, ... NS_REQUIRES_NIL_TERMINATION {
-	if (!(name && url)) {
+	if (!name.length) { return nil; }
+	if (self.isHeuristicSubclass) {
+		NSAssert (!url, @"%@ subclasses must provide their own URL storage", [KBPrefixUpdateHeuristic class]);
+	} else if (!url) {
 		return nil;
 	}
+	
 	if (self = [super init]) {
 		_name = [name copy];
 		
-		id __unsafe_unretained stackURLs [256] = { url }, *urls = stackURLs, *urlsEnd = urls + 1;
-		size_t urlsAllocated = sizeof (stackURLs) / sizeof (*stackURLs);
-		
-		va_list args;
-		va_start (args, url);
-		for (id __unsafe_unretained url; (url = va_arg (args, NSURL *)); *urlsEnd++ = url) {
-			size_t const count = urlsEnd - urls;
-			if (count >= urlsAllocated) {
-				urlsAllocated += count / 2;
-				size_t const newSize = urlsAllocated * sizeof (id);
-				if (urls == stackURLs) {
-					urls = (id __unsafe_unretained *) malloc (newSize);
-					memcpy (urls, stackURLs, sizeof (stackURLs));
-				} else {
-					urls = (id __unsafe_unretained *) realloc (urls, newSize);
+		if (url) {
+			id __unsafe_unretained stackURLs [256] = { url }, *urls = stackURLs, *urlsEnd = urls + 1;
+			size_t urlsAllocated = sizeof (stackURLs) / sizeof (*stackURLs);
+			
+			va_list args;
+			va_start (args, url);
+			for (id __unsafe_unretained url; (url = va_arg (args, NSURL *)); *urlsEnd++ = url) {
+				size_t const count = urlsEnd - urls;
+				if (count >= urlsAllocated) {
+					urlsAllocated += count / 2;
+					size_t const newSize = urlsAllocated * sizeof (id);
+					if (urls == stackURLs) {
+						urls = (id __unsafe_unretained *) malloc (newSize);
+						memcpy (urls, stackURLs, sizeof (stackURLs));
+					} else {
+						urls = (id __unsafe_unretained *) realloc (urls, newSize);
+					}
+					urlsEnd = urls + count;
 				}
-				urlsEnd = urls + count;
 			}
-		}
-		va_end (args);
-		
-		_requestedURLs = [[NSSet alloc] initWithObjects:urls count:urlsEnd - urls];
-		if (urls != stackURLs) {
-			free (urls);
+			va_end (args);
+			
+			*(id __strong *) object_getIndexedIvars (self) = [[NSSet alloc] initWithObjects:urls count:urlsEnd - urls];
+			if (urls != stackURLs) {
+				free (urls);
+			}
 		}
 	}
 	return self;
 }
 
+- (void) dealloc {
+	if (!self.isHeuristicSubclass) { *(id __strong *) object_getIndexedIvars (self) = nil; }
+}
+
+- (NSArray <NSURL *> *) requestedURLs {
+	if (self.isHeuristicSubclass) KB_ABSTRACT;
+	return *(id __strong *) object_getIndexedIvars (self);
+}
+
 @end
+
+@implementation KBDynamicPrefixUpdateHeuristic {
+	NSURL *_rootURL;
+	KBPrefixUpdateHeuristicPathCheckingResult (^_descendantsPredicate) (NSArray <NSString *> *pathComponents);
+}
+
+- (instancetype) initWithName: (NSString *) name rootURL: (NSURL *) rootURL descendantsPredicate: (KBPrefixUpdateHeuristicPathCheckingResult (^) (NSArray <NSString *> *pathComponents)) descendantsPredicate {
+	if (self = [super initWithName:name requestedURLs:nil]) {
+		_rootURL = rootURL;
+		_descendantsPredicate = [descendantsPredicate copy];
+	}
+	return self;
+}
+
+- (NSSet <NSURL *> *) requestedURLs {
+	NSInteger const rootPathComponentsCount = _rootURL.pathComponents.count;
+	NSMutableArray <NSURL *> *const result = [NSMutableArray new];
+	NSDirectoryEnumerator *const enumerator = [[NSFileManager defaultManager] enumeratorAtURL:_rootURL includingPropertiesForKeys:NSURL.readableDirectoryKeys options:NSDirectoryEnumerationProducesRelativePathURLs errorHandler:NULL];
+	for (NSURL *subURL in enumerator) {
+		NSArray <NSString *> *const pathComponents = subURL.pathComponents;
+		NSInteger const relativePathComponentsCount = (NSInteger) pathComponents.count - rootPathComponentsCount;
+		if (!subURL.isReadableDirectory || (relativePathComponentsCount <= 0)) { continue; }
+		switch (_descendantsPredicate ([pathComponents subarrayWithRange:NSMakeRange (rootPathComponentsCount, relativePathComponentsCount)])) {
+		case KBPrefixUpdateHeuristicContinuePathEnumeraration: continue;
+		case KBPrefixUpdateHeuristicPossiblePrefixPathRecognized: [result addObject:subURL];
+		case KBPrefixUpdateHeuristicIgnorePathAndDescendants: break;
+		}
+		[enumerator skipDescendants];
+	}
+	return [[NSSet alloc] initWithArray:result];
+}
+
+@end
+
+NS_INLINE KBPrefixUpdateHeuristicPathCheckingResult KBPrefixUpdateHeuristicHomebrewPredicate (NSArray <NSString *> *pathComponents) {
+	switch (pathComponents.count) {
+	case 1: case 2: return KBPrefixUpdateHeuristicContinuePathEnumeraration;
+	case 3: if ([pathComponents.lastObject isEqualToString:@"libexec"]) { return KBPrefixUpdateHeuristicContinuePathEnumeraration; }; break;
+	case 4: if ([pathComponents.lastObject isEqualToString:@"gnuman"]) { return KBPrefixUpdateHeuristicPossiblePrefixPathRecognized; }; break;
+	}
+	return KBPrefixUpdateHeuristicIgnorePathAndDescendants;
+}

@@ -59,6 +59,7 @@
 
 		NSTableView *tableView = [[NSTableView alloc] initWithFrame:contentBounds];
 		tableView.translatesAutoresizingMaskIntoConstraints = NO;
+		[tableView setContentCompressionResistancePriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationVertical];
 		tableView.headerView = nil;
 		tableView.backgroundColor = [NSColor clearColor];
 		[tableView addTableColumn:column];
@@ -109,7 +110,6 @@
 		 
 			[scrollView constrainBoundsToSuperviewBounds],
 			[scrollView.contentView constrainBoundsToSuperviewBounds],
-			[tableView constrainBoundsToSuperviewBounds],
 		
 			[scrollView.heightAnchor constraintEqualToAnchor:tableView.heightAnchor priority:NSLayoutPriorityDefaultHigh],
 			
@@ -149,30 +149,133 @@
 	}];
 }
 
+- (NSRange) visibleRows {
+	return [self.tableView rowsInRect:self.tableView.visibleRect];
+}
+
+- (NSRange) fullyVisibleRows {
+	NSRect const visibleRect = self.tableView.visibleRect;
+	NSRange fullyVisibleRows = [self visibleRows];
+	if (fullyVisibleRows.length && !NSContainsRect (visibleRect, [self.tableView rectOfRow:fullyVisibleRows.location])) {
+		fullyVisibleRows.location++;
+		fullyVisibleRows.length--;
+	}
+	if (fullyVisibleRows.length && !NSContainsRect (visibleRect, [self.tableView rectOfRow:NSMaxRange (fullyVisibleRows) - 1])) {
+		fullyVisibleRows.length--;
+	}
+	return fullyVisibleRows;
+}
+
 - (BOOL) selectNextSuggestion {
-	[self selectSuggestionWithOffset:1];
-	return YES;
+	return [self selectAdjacentSuggestionSearchingBackward:NO];
 }
 
 - (BOOL) selectPrevSuggestion {
-	[self selectSuggestionWithOffset:-1];
-	return YES;
+	return [self selectAdjacentSuggestionSearchingBackward:YES];
 }
 
-- (void) selectSuggestionWithOffset: (NSInteger) offset {
-	if (!self.tableViewItems.count) {
-		return;
-	}
-	NSInteger rowToSelect;
-	if (self.tableView.selectedRow < 0) {
-		rowToSelect = (offset > 0) ? 1 : self.tableViewItems.count - 1;
+- (BOOL) selectAdjacentSuggestionSearchingBackward: (BOOL) searchBackwards {
+	NSInteger row = self.tableView.selectedRow;
+	if (row < 0) {
+		row = searchBackwards ? -1 : 0;
 	} else {
-		rowToSelect = self.tableView.selectedRow;
-		do {
-			rowToSelect = (rowToSelect + offset) % self.tableViewItems.count;
-		} while ([self tableView:self.tableView isGroupRow:rowToSelect]);
+		searchBackwards ? row-- : row++;
 	}
-	[self.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowToSelect] byExtendingSelection:NO];
+	return [self selectFirstSelectableRowStartingAt:row searchBackwards:searchBackwards];
+}
+
+- (BOOL) selectNextSuggestionsPage {
+	{
+		NSInteger const selectedRow = self.tableView.selectedRow;
+		if (selectedRow < 0) { return [self selectFirstSuggestion]; }
+		
+		NSRange const visibleRows = [self fullyVisibleRows];
+		if (NSMaxRange (visibleRows) == self.tableViewItems.count) {
+			return [self selectFirstSelectableRowInRange:NSMaxRange (visibleRows) - 1 :MAX (visibleRows.location, selectedRow) searchBackwards:YES scrollToSelection:NO] || [self selectFirstSuggestion];
+		}
+	}
+	{
+		[self.scrollView pageDown:self];
+		NSRange const visibleRows = [self visibleRows];
+		[self selectFirstSelectableRowInRange:visibleRows.location : NSMaxRange (visibleRows) searchBackwards:NO];
+		return YES;
+	}
+}
+
+- (BOOL) selectPrevSuggestionsPage {
+	{
+		NSInteger const selectedRow = self.tableView.selectedRow;
+		if (selectedRow < 0) { return [self selectLastSuggestion]; }
+		
+		NSRange const visibleRows = [self visibleRows];
+		if ([self selectFirstSelectableRowInRange:visibleRows.location : MIN (NSMaxRange (visibleRows), selectedRow) searchBackwards:NO]) { return YES; }
+		if (!visibleRows.location) { return [self selectLastSuggestion]; }
+	}
+	{
+		[self.scrollView pageUp:self];
+		NSRange const visibleRows = [self fullyVisibleRows];
+		[self selectFirstSelectableRowInRange:visibleRows.location : NSMaxRange (visibleRows) searchBackwards:NO scrollToSelection:NO];
+		[self.tableView scrollPoint:[self.tableView rectOfRow:visibleRows.location].origin];
+		return YES;
+	}
+}
+
+- (BOOL) selectFirstSuggestion {
+	return [self selectFirstSelectableRowStartingAt:0 searchBackwards:NO];
+}
+
+- (BOOL) selectLastSuggestion {
+	return [self selectFirstSelectableRowStartingAt:-1 searchBackwards:YES];
+}
+
+- (BOOL) selectFirstSelectableRowStartingAt: (NSInteger) firstRow searchBackwards: (BOOL) searchBackwards {
+	return [self selectFirstSelectableRowStartingAt:firstRow searchBackwards:searchBackwards scrollToSelection:YES];
+}
+
+- (BOOL) selectFirstSelectableRowInRange: (NSInteger) firstRow : (NSInteger) lastRow searchBackwards: (BOOL) searchBackwards {
+	return [self selectFirstSelectableRowInRange:firstRow :lastRow searchBackwards:searchBackwards scrollToSelection:YES];
+}
+
+- (BOOL) selectFirstSelectableRowStartingAt: (NSInteger) firstRow searchBackwards: (BOOL) searchBackwards scrollToSelection: (BOOL) scrollToSelection {
+	return [self selectRow:[self firstSelectableRowStartingAt:firstRow searchBackwards:searchBackwards] scrollToSelection:scrollToSelection];
+}
+
+- (BOOL) selectFirstSelectableRowInRange: (NSInteger) firstRow : (NSInteger) lastRow searchBackwards: (BOOL) searchBackwards scrollToSelection: (BOOL) scrollToSelection {
+	return [self selectRow:[self firstSelectableRowInRange:firstRow :lastRow searchBackwards:searchBackwards] scrollToSelection:scrollToSelection];
+}
+
+- (NSInteger) firstSelectableRowStartingAt: (NSInteger) firstRow searchBackwards: (BOOL) searchBackwards {
+	return [self firstSelectableRowInRange:firstRow :NSNotFound searchBackwards:searchBackwards];
+}
+
+NS_INLINE NSInteger NSIntegerNormalizeModulo (NSInteger value, NSInteger modulus) {
+	NSCParameterAssert (modulus > 0);
+	return (value < 0) ? (modulus - -value % modulus) : value % modulus;
+}
+
+- (NSInteger) firstSelectableRowInRange: (NSInteger) firstRow : (NSInteger) lastRow searchBackwards: (BOOL) searchBackwards {
+	if (firstRow == lastRow) { return NSNotFound; }
+	NSInteger const itemsCount = self.tableViewItems.count;
+	if (!itemsCount) { return NSNotFound; }
+
+	NSInteger const rowStep = searchBackwards ? itemsCount - 1 : 1;
+	firstRow = NSIntegerNormalizeModulo (firstRow, itemsCount);
+	lastRow = (lastRow == NSNotFound) ? firstRow : NSIntegerNormalizeModulo (lastRow, itemsCount);
+	NSInteger row = firstRow;
+	do {
+		if (![self tableView:self.tableView isGroupRow:row]) {
+			return row;
+		}
+		row = (row + rowStep) % itemsCount;
+	} while (row != lastRow);
+	return NSNotFound;
+}
+
+- (BOOL) selectRow: (NSInteger) row scrollToSelection: (BOOL) scrollToSelection {
+	if ((row == NSNotFound) || (row < 0) || (row >= self.tableViewItems.count)) { return NO; }
+	[self.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+	if (scrollToSelection) { (row > 1) ? [self.tableView scrollRowToVisible:row] : [self.tableView scrollPoint:NSZeroPoint]; }
+	return YES;
 }
 
 - (BOOL) confirmSuggestionSelection {
@@ -201,21 +304,21 @@
 	self.tableViewItems = tableViewItems;
 
 	[self.tableView reloadData];
+	[self.tableViewItems enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+		if ([obj isKindOfClass:[KBDocumentMeta class]] && [selectedID isEqual:[obj objectID]]) {
+			*stop = YES;
+			[self selectRow:idx scrollToSelection:YES];
+		}
+	}];
 	
 	NSTableColumn *const column = self.tableView.tableColumns.firstObject;
 	CGFloat maxWidth = column.minWidth;
-	NSRange const visibleRows = [self.tableView rowsInRect:self.tableView.visibleRect];
+	NSRange const visibleRows = [self visibleRows];
 	for (NSUInteger row = visibleRows.location; row < NSMaxRange (visibleRows); row++) {
 		maxWidth = MAX (maxWidth, [self ceilValue:[[column dataCellForRow:row] cellSize].width]);
 	}
 	self.tableWidthConstraint.constant = maxWidth;
 
-	[self.tableViewItems enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-		if ([obj isKindOfClass:[KBDocumentMeta class]] && [selectedID isEqual:[obj objectID]]) {
-			*stop = YES;
-			[self.tableView selectRowIndexes:[NSIndexSet indexSetWithIndex:idx] byExtendingSelection:NO];
-		}
-	}];
 	self.noDocumentsView.hidden = !(self.scrollView.hidden = !tableViewItems.count);
 }
 

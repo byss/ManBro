@@ -26,7 +26,7 @@
 	return [sourceArray arrayByValidatingObjectsAsPropertyNamesForEntity:self.entity];
 }
 
-+ (NSFetchRequest *) fetchRequestForObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames {
++ (NSFetchRequest <__kindof NSManagedObject *> *) fetchRequestForObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames {
 	NSParameterAssert (values.count == propertyNames.count);
 	NSArray <NSString *> *const validatedNames = [self validatedArrayOfPropertyNames:propertyNames];
 	if (!validatedNames) {
@@ -47,11 +47,7 @@
 	return result;
 }
 
-+ (NSFetchRequest *) fetchRequestFromTemplateWithName: (NSString *) templateName substitutionVariables: (NSDictionary <NSString *, id> *) variables {
-	return [[NSPersistentContainer sharedContainer].managedObjectModel fetchRequestFromTemplateWithName:templateName substitutionVariables:variables];
-}
-
-+ (NSArray *) fetchObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames inContext: (NSManagedObjectContext *) context {
++ (NSArray <__kindof NSManagedObject *> *) fetchObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames inContext: (NSManagedObjectContext *) context {
 	return [context executeFetchRequest:[self fetchRequestForObjectsWithValues:values forPropertiesNamed:propertyNames]];
 }
 

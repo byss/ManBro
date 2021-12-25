@@ -29,7 +29,7 @@
 
 @dynamic filename, html, normalizedTitle, title, section;
 
-+ (KBDocumentMeta *) fetchDocumentNamed: (NSString *) documentTitle section: (KBSection *) section {
++ (instancetype) fetchDocumentNamed: (NSString *) documentTitle section: (KBSection *) section {
 	static NSArray <NSString *> *properties = nil;
 	static dispatch_once_t onceToken;
 	dispatch_once (&onceToken, ^{

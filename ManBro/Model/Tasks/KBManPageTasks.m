@@ -11,6 +11,8 @@
 
 #import <stdatomic.h>
 
+#import "NSError+convenience.h"
+
 @interface KBFileURLArrayTaskResponse: NSObject <KBTaskResponseType>
 @end
 @interface KBManpathQueryTaskResponse: KBFileURLArrayTaskResponse
@@ -116,9 +118,7 @@
 + (id) createWithTaskResponse: (NSData *) responseData error: (NSError *__autoreleasing *) error {
 	NSMutableString *const responseString = [[NSMutableString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
 	if (!responseString) {
-		if (error) {
-			*error = [[NSError alloc] initWithDomain:NSCocoaErrorDomain code:NSFileReadCorruptFileError userInfo:nil];
-		}
+		NSOutErr (error, [NSError fileReadCorruptFileError]);
 		return nil;
 	}
 	
@@ -135,9 +135,7 @@
 		[responseString deleteCharactersInRange:NSMakeRange (0, consumedLength)];
 		NSURL *url = [[NSURL alloc] initFileURLWithPath:urlString];
 		if (!url) {
-			if (error) {
-				*error = [[NSError alloc] initWithDomain:NSCocoaErrorDomain code:NSFileReadCorruptFileError userInfo:nil];
-			}
+			NSOutErr (error, [NSError fileReadCorruptFileError]);
 			return nil;
 		}
 		if (stackObjectsEnd < stackObjects + stackObjectsCount) {

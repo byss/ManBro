@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *text;
 @property (nonatomic, readonly, nullable) NSSet <KBPrefix *> *prefixes;
 @property (nonatomic, readonly, nullable) NSSet <KBSection *> *sections;
+@property (nonatomic, readonly, getter = isPartialMatchingAllowed) BOOL partialMatchingAllowed;
 
 + (instancetype) new NS_UNAVAILABLE;
 - (instancetype) init NS_UNAVAILABLE;
@@ -34,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *text;
 @property (nonatomic, copy, nullable) NSSet <KBPrefix *> *prefixes;
 @property (nonatomic, copy, nullable) NSSet <KBSection *> *sections;
+@property (nonatomic, assign, getter = isPartialMatchingAllowed) BOOL partialMatchingAllowed;
 
 + (instancetype) new;
 - (instancetype) init;
@@ -48,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype) initWithContext: (NSManagedObjectContext *) context NS_DESIGNATED_INITIALIZER;
 
+- (NSArray <id <NSFetchedResultsSectionInfo>> *) fetchDocumentsMatchingQuery: (KBSearchQuery *__nullable) searchQuery;
 - (void) fetchDocumentsMatchingQuery: (KBSearchQuery *__nullable) searchQuery completion: (void (^) (NSArray <id <NSFetchedResultsSectionInfo>> *)) completion;
 
 @end

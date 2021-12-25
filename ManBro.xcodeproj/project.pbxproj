@@ -18,6 +18,7 @@
 		434429D82739466500D222E7 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 434429D72739466500D222E7 /* UniformTypeIdentifiers.framework */; };
 		435013F22772C9A00007A06A /* NSLayoutConstraint+convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 435013F12772C9A00007A06A /* NSLayoutConstraint+convenience.m */; };
 		435543C32578B46500B3A8ED /* KBTask.mm in Sources */ = {isa = PBXBuildFile; fileRef = 435543C22578B46500B3A8ED /* KBTask.mm */; };
+		435DAA752773DF7B008E707C /* NSError+convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 435DAA742773DF7B008E707C /* NSError+convenience.m */; };
 		43C7BA5A2755956F00B5049B /* KBSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA592755956F00B5049B /* KBSection.m */; };
 		43C7BA6427559C0100B5049B /* NSManagedObject+convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA6327559C0100B5049B /* NSManagedObject+convenience.m */; };
 		43C7BA692755A5E400B5049B /* KBFilesystemObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA682755A5E400B5049B /* KBFilesystemObject.m */; };
@@ -59,6 +60,8 @@
 		435013F12772C9A00007A06A /* NSLayoutConstraint+convenience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSLayoutConstraint+convenience.m"; sourceTree = "<group>"; };
 		435543C12578B46500B3A8ED /* KBTask.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBTask.h; sourceTree = "<group>"; };
 		435543C22578B46500B3A8ED /* KBTask.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = KBTask.mm; sourceTree = "<group>"; };
+		435DAA732773DF7B008E707C /* NSError+convenience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSError+convenience.h"; sourceTree = "<group>"; };
+		435DAA742773DF7B008E707C /* NSError+convenience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSError+convenience.m"; sourceTree = "<group>"; };
 		43C7BA582755956F00B5049B /* KBSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBSection.h; sourceTree = "<group>"; };
 		43C7BA592755956F00B5049B /* KBSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBSection.m; sourceTree = "<group>"; };
 		43C7BA6227559C0100B5049B /* NSManagedObject+convenience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+convenience.h"; sourceTree = "<group>"; };
@@ -128,6 +131,8 @@
 			isa = PBXGroup;
 			children = (
 				43D9A2012771577600A34485 /* NSObject+abstract.h */,
+				435DAA732773DF7B008E707C /* NSError+convenience.h */,
+				435DAA742773DF7B008E707C /* NSError+convenience.m */,
 				43C7BA6E2760F84C00B5049B /* NSString+searchPredicateValue.h */,
 				43C7BA6F2760F84C00B5049B /* NSString+searchPredicateValue.m */,
 				43DE04F8276D0789004EB220 /* NSURL+filesystem.h */,
@@ -341,6 +346,7 @@
 				43C7BA5A2755956F00B5049B /* KBSection.m in Sources */,
 				43DE04FA276D0789004EB220 /* NSURL+filesystem.m in Sources */,
 				43ED987F25762B8800CB3098 /* KBPrefix.m in Sources */,
+				435DAA752773DF7B008E707C /* NSError+convenience.m in Sources */,
 				4326E1A727439C3B00C82DEE /* KBIndexManager.m in Sources */,
 				43C7BA692755A5E400B5049B /* KBFilesystemObject.m in Sources */,
 				4326E1AB27439CBC00C82DEE /* KBManPageTasks.m in Sources */,
@@ -393,7 +399,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -451,7 +457,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES_ERROR;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

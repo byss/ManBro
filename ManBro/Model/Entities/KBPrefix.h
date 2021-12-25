@@ -26,8 +26,8 @@ extern KBPrefixSource const KBPrefixSourceUser;
 @property (nonatomic, strong) NSSet <KBSection *> *sections;
 @property (nonatomic, readonly) NSSet <KBDocumentMeta *> *documents;
 
-+ (void) fetchInContext: (NSManagedObjectContext *) context completion: (void (^) (NSArray <KBPrefix *> *)) completion;
-+ (KBPrefix *) fetchPrefixWithURL: (NSURL *) url createIfNeeded: (BOOL) createIfNeeded context: (NSManagedObjectContext *) context;
++ (void) fetchInContext: (NSManagedObjectContext *) context completion: (void (^) (NSArray <__kindof KBPrefix *> *)) completion;
++ (instancetype) fetchPrefixWithURL: (NSURL *) url createIfNeeded: (BOOL) createIfNeeded context: (NSManagedObjectContext *) context;
 
 - (KBSection *__nullable) sectionNamed: (NSString *) sectionName createIfNeeded: (BOOL) createIfNeeded;
 

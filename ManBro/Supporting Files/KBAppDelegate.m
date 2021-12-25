@@ -7,8 +7,9 @@
 
 #import "KBAppDelegate.h"
 
-#import "CoreData+logging.h"
 #import "KBIndexManager.h"
+#import "CoreData+logging.h"
+#import "KBDocumentLoading.h"
 #import "KBDocumentController.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
@@ -36,6 +37,32 @@
 static NSString *const KBPrefixUpdateLastTimestampKey = @"lastPrefixesScanTimestamp";
 
 @implementation KBAppDelegate
+
+- (void) applicationDidFinishLaunching: (NSNotification *) notification {
+	KBManSchemeURLResolver *const resolver = [KBManSchemeURLResolver sharedResolver];
+	if (!resolver.appIsDefaultManURLHandler) {
+		[resolver setDefaultManURLHandlerWithCompletion:^(NSError *error) {
+			if (error) {
+				NSLog (@"Error: %@", error);
+			}
+		}];
+	}
+}
+
+- (void) application: (NSApplication *) application openURLs: (NSArray <NSURL *> *) urls {
+	KBManSchemeURLResolver *const resolver = [KBManSchemeURLResolver sharedResolver];
+	for (NSURL *url in urls) {
+		if (![url.scheme isEqualToString:KBManScheme]) { continue; }
+		[resolver resolveManURL:url relativeToDocumentURL:nil completion:^(NSURL *resolvedURL, NSError *error) {
+			dispatch_async (dispatch_get_main_queue (), ^{
+				if (error) { return (void) [NSApp presentError:error]; }
+				KBDocumentController *const controller = [KBDocumentController new];
+				[controller.window makeKeyAndOrderFront:nil];
+				[controller loadDocumentAtURL:resolvedURL];
+			});
+		}];
+	}
+}
 
 - (BOOL) applicationOpenUntitledFile: (NSApplication *) sender {
 	[[KBDocumentController new].window makeKeyAndOrderFront:sender];

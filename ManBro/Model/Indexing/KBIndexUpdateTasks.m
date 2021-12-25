@@ -88,10 +88,6 @@ NS_ASSUME_NONNULL_END
 	NSURLGenerationIdentifier const generationID = prefixProps [NSURLGenerationIdentifierKey];
 	if (![self.objectGenerationIdentifier isEqual:generationID]) {
 		self.objectGenerationIdentifier = generationID;
-		static NSSet *unnamedSectionOnly;
-		static dispatch_once_t onceToken;
-		dispatch_once (&onceToken, ^{ unnamedSectionOnly = [[NSSet alloc] initWithObjects:[NSNull null], nil]; });
-		if ([existingSectionNames isEqualToSet:unnamedSectionOnly]) { return; }
 
 		NSFileManager *const mgr = [NSFileManager defaultManager];
 		NSDirectoryEnumerator *const enumerator = [mgr enumeratorAtURL:url includingPropertiesForKeys:NSURL.readableDirectoryAndGenerationIdentifierKeys options:NSDirectoryEnumerationSkipsSubdirectoryDescendants errorHandler:NULL];
@@ -103,8 +99,6 @@ NS_ASSUME_NONNULL_END
 		}
 	}
 }
-
-- (BOOL) shouldDeleteObject { return self.object.inserted && !self.object.sections.count; }
 
 @end
 
@@ -171,19 +165,15 @@ NS_ASSUME_NONNULL_END
 	typeof (self) strongSelf = self;
 	[strongSelf addAction:^{
 		NSURL *const url = self.objectURL;
-		if (!url.isReadableRegularFile) { return; }
+		NSDictionary <NSURLResourceKey, id> *const urlProps = [url.URLByResolvingSymlinksInPath resourceValuesForKeys:NSURL.readableRegularFileAndGenerationIdentifierKeys error:NULL];
+		if (!urlProps.readableRegularFile) { return; }
 		NSString *const documentTitle = url.manDocumentTitle;
 		if ((self->_success = !!documentTitle)) {
-			NSURLGenerationIdentifier generationID;
-			[url getResourceValue:&generationID forKey:NSURLGenerationIdentifierKey error:NULL];
+			NSURLGenerationIdentifier const generationID = urlProps [NSURLGenerationIdentifierKey];
 			[self.context performBlockAndWait:^{
 				self.object.title = documentTitle;
 				self.objectGenerationIdentifier = generationID;
 			}];
-		} else {
-			NSURL *const resolvedURL = url.URLByResolvingSymlinksInPath;
-			NSString *const urlString = [resolvedURL isEqual:url] ? url.absoluteString : [[NSString alloc] initWithFormat:@"%@ (%@)", url.absoluteString, resolvedURL.absoluteString];
-			NSLog (@"Failed URL: %@", urlString);
 		}
 	} performInContext:NO];
 }

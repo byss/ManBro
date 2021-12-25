@@ -23,4 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
  
 @end
 
+@class KBDocumentMeta;
+@interface KBDocumentController (documentLoading)
+
+- (void) loadDocument: (KBDocumentMeta *) document;
+- (void) loadDocumentAtURL: (NSURL *) documentURL;
+
+@end
+
+
 NS_ASSUME_NONNULL_END

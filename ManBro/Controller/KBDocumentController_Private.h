@@ -37,6 +37,10 @@ typedef NS_ENUM(NSUInteger, KBDocumentRequestOptions) {
 
 - (BOOL) selectNextSuggestion;
 - (BOOL) selectPrevSuggestion;
+- (BOOL) selectNextSuggestionsPage;
+- (BOOL) selectPrevSuggestionsPage;
+- (BOOL) selectFirstSuggestion;
+- (BOOL) selectLastSuggestion;
 - (BOOL) confirmSuggestionSelection;
 
 @end

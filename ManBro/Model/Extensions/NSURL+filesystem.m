@@ -46,9 +46,7 @@
 	NSString *const sectionName = self.URLByDeletingLastPathComponent.manSectionName;
 	if (!sectionName) { return nil; }
 	
-	static NSSet <NSString *> *additionalExtensions;
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{ additionalExtensions = [[NSSet alloc] initWithObjects:@"gz", nil]; });
+	static NSArray <NSString *> *const additionalExtensions = @[ @"gz" ];
 	NSURL *documentURL = self.absoluteURL.standardizedURL;
 	while ([additionalExtensions containsObject:documentURL.pathExtension]) {
 		documentURL = documentURL.URLByDeletingPathExtension;

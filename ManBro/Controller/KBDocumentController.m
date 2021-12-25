@@ -8,9 +8,7 @@
 
 #import "KBDocumentController_Private.h"
 
-#import <WebKit/WKWebView.h>
-#import <WebKit/WKNavigationDelegate.h>
-#import <WebKit/WKWebViewConfiguration.h>
+#import <WebKit/WebKit.h>
 
 #import "KBTask.h"
 #import "KBSection.h"
@@ -25,6 +23,8 @@
 @end
 @interface KBDocumentController (KBDocumentControllerSearchPanelDelegate) <KBDocumentControllerSearchPanelDelegate>
 @end
+@interface KBDocumentController (NSUserInterfaceValidations) <NSUserInterfaceValidations>
+@end
 @interface KBDocumentController (WKNavigationDelegate) <WKNavigationDelegate>
 @end
 
@@ -36,17 +36,11 @@
 
 @end
 
-@interface KBDocumentController (documentLoading)
-
-- (void) loadDocument: (KBDocumentMeta *) document;
-
-@end
-
 @interface KBDocumentController ()
 
 @property (nonatomic, unsafe_unretained) IBOutlet NSSearchToolbarItem *searchItem;
 @property (nonatomic, unsafe_unretained) KBDocumentControllerSuggestionsPanel *documentSuggestionsPanel;
-@property (nonatomic, readonly) WKWebView *webView;
+@property (nonatomic, readonly) IBOutlet WKWebView *webView;
 
 - (instancetype) init NS_DESIGNATED_INITIALIZER;
 
@@ -125,10 +119,11 @@ static NSMutableSet <KBDocumentController *> *KBDocumentControllerInstances = ni
 @implementation KBDocumentController (documentLoading)
 
 - (void) loadDocument: (KBDocumentMeta *) document {
-	self.window.title = [[NSString alloc] initWithFormat:@"%@ (%@)", document.title, document.section.name];
-	self.window.representedURL = document.URL;
-	self.window.tab.toolTip = @(document.URL.fileSystemRepresentation);
-	[self.webView loadRequest:[[NSURLRequest alloc] initWithURL:document.loaderURI]];
+	[self loadDocumentAtURL:document.loaderURI];
+}
+
+- (void) loadDocumentAtURL: (NSURL *) documentURL {
+	[self.webView loadRequest:[[NSURLRequest alloc] initWithURL:documentURL]];
 }
 
 @end
@@ -139,10 +134,13 @@ static NSMutableSet <KBDocumentController *> *KBDocumentControllerInstances = ni
 	[super windowDidLoad];
 
 	WKWebViewConfiguration *const config = [WKWebViewConfiguration new];
-	[config setURLSchemeHandler:[KBDocumentBodyLoader new] forURLScheme:KBDocumentBodyLoader.scheme];
+	KBDocumentBodyLoader *const documentBodyLoader = [KBDocumentBodyLoader new];
+	[config setURLSchemeHandler:documentBodyLoader forURLScheme:KBDocumentBodyLoader.scheme];
 	[config setURLSchemeHandler:[KBDocumentBundledResourceLoader new] forURLScheme:KBDocumentBundledResourceLoader.scheme];
 	
-	self.window.contentView = [[WKWebView alloc] initWithFrame:self.window.contentLayoutRect configuration:config];
+	WKWebView *const webView = [[WKWebView alloc] initWithFrame:self.window.contentLayoutRect configuration:config];
+	webView.navigationDelegate = self;
+	self.window.contentView = webView;
 	
 	if (KBDocumentControllerInstances) {
 		[KBDocumentControllerInstances addObject:self];
@@ -191,6 +189,14 @@ static NSMutableSet <KBDocumentController *> *KBDocumentControllerInstances = ni
 		return [self.documentSuggestionsPanel selectPrevSuggestion];
 	} else if (commandSelector == @selector (insertNewline:)) {
 		return [self.documentSuggestionsPanel confirmSuggestionSelection];
+	} else if (commandSelector == @selector (scrollPageDown:)) {
+		return [self.documentSuggestionsPanel selectNextSuggestionsPage];
+	} else if (commandSelector == @selector (scrollPageUp:)) {
+		return [self.documentSuggestionsPanel selectPrevSuggestionsPage];
+	} else if (commandSelector == @selector (scrollToBeginningOfDocument:)) {
+		return [self.documentSuggestionsPanel selectFirstSuggestion];
+	} else if (commandSelector == @selector (scrollToEndOfDocument:)) {
+		return [self.documentSuggestionsPanel selectLastSuggestion];
 	}
 	return NO;
 }
@@ -220,12 +226,74 @@ static NSMutableSet <KBDocumentController *> *KBDocumentControllerInstances = ni
 
 @end
 
+@implementation KBDocumentController (NSUserInterfaceValidations)
+
+- (BOOL) validateUserInterfaceItem: (id <NSValidatedUserInterfaceItem>) item {
+	if (item.action == @selector (goBack:)) {
+		return self.webView.canGoBack;
+	} else if (item.action == @selector (goForward:)) {
+		return self.webView.canGoForward;
+	} else {
+		return NO;
+	}
+}
+
+@end
+
 @implementation KBDocumentController (WKNavigationDelegate)
 
-- (void) webView: (WKWebView *) webView didFailNavigation: (WKNavigation *) navigation withError: (NSError *) error {
+- (IBAction) goBack: (id) sender {
+	[self.webView goBack:sender];
+}
+
+- (IBAction) goForward: (id) sender {
+	[self.webView goForward:sender];
+}
+
+- (void)webView: (WKWebView *) webView decidePolicyForNavigationAction: (WKNavigationAction *) navigationAction preferences: (WKWebpagePreferences *) preferences decisionHandler: (void (^)(WKNavigationActionPolicy, WKWebpagePreferences *)) decisionHandler {
+	NSURL *const targetURL = navigationAction.request.URL;
+	NSString *const targetScheme = targetURL.scheme;
+	if ([targetScheme isEqualToString:KBManScheme]) {
+		decisionHandler (WKNavigationActionPolicyCancel, nil);
+		[[KBManSchemeURLResolver sharedResolver] resolveManURL:targetURL relativeToDocumentURL:webView.URL completion:^(NSURL *resolvedURL, NSError *error) {
+			dispatch_async (dispatch_get_main_queue (), ^{
+				if (resolvedURL) {
+					[webView loadRequest:[[NSURLRequest alloc] initWithURL:resolvedURL]];
+				} else {
+					[self presentError:error];
+				}
+			});
+		}];
+	} else if ([WKWebView handlesURLScheme:targetScheme] || [webView.configuration urlSchemeHandlerForURLScheme:targetScheme]) {
+		decisionHandler (WKNavigationActionPolicyAllow, preferences);
+	} else {
+		decisionHandler (WKNavigationActionPolicyCancel, nil);
+	}
+}
+
+- (void) webView: (WKWebView *) webView didStartProvisionalNavigation: (WKNavigation *) navigation {
+	self.window.title = NSLocalizedString (@"Loading…", nil);
+	self.window.representedURL = nil;
+	self.window.tab.toolTip = nil;
+}
+
+- (void) webView: (WKWebView *) webView didFinishNavigation: (WKNavigation *) navigation {
 	dispatch_async (dispatch_get_main_queue (), ^{
-		[self.window presentError:error];
+		KBDocumentMeta *const document = [[KBDocumentMeta alloc] initWithLoaderURI:webView.URL context:[NSPersistentContainer sharedContainer].viewContext];
+		self.window.title = [[NSString alloc] initWithFormat:@"%@ (%@)", document.title, document.section.name];
+		self.window.representedURL = document.URL;
+		self.window.tab.toolTip = document.URL.fileSystemRepresentation ? @(document.URL.fileSystemRepresentation) : nil;
+		[self.window.toolbar validateVisibleItems];
 	});
+}
+
+- (void) webView: (WKWebView *) webView didFailProvisionalNavigation: (WKNavigation *) navigation withError: (NSError *) error {
+	[self webView:webView didFailNavigation:navigation withError:error];
+}
+
+- (void) webView: (WKWebView *) webView didFailNavigation: (WKNavigation *) navigation withError: (NSError *) error {
+	if ([error.domain isEqualToString:WKErrorDomain]) { return; }
+	dispatch_async (dispatch_get_main_queue (), ^{ [self presentError:error]; });
 }
 
 @end

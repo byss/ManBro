@@ -22,12 +22,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, nullable) NSURL *loaderURI;
 
++ (NSManagedObjectID *__nullable) objectIDWithLoaderURI: (NSURL *) loaderURI error: (NSError *__autoreleasing *__nullable) error;
+
+- (instancetype __nullable) initWithLoaderURI: (NSURL *) loaderURI context: (NSManagedObjectContext *) context;
+
 @end
 
 @interface KBDocumentBodyLoader: KBDocumentLoader
 @end
 
 @interface KBDocumentBundledResourceLoader: KBDocumentLoader
+@end
+
+extern NSString *const KBManScheme;
+
+@interface KBManSchemeURLResolver: NSObject
+
+@property (nonatomic, readonly) BOOL appIsDefaultManURLHandler;
+
++ (instancetype) sharedResolver;
+
++ (instancetype) new NS_UNAVAILABLE;
+- (instancetype) init NS_UNAVAILABLE;
+
+- (void) setDefaultManURLHandlerWithCompletion: (void (^)(NSError *)) completion;
+- (void) resolveManURL: (NSURL *) url relativeToDocumentURL: (NSURL *__nullable) documentURL completion: (void (^) (NSURL *__nullable, NSError *__nullable)) completion;
+
 @end
 
 NS_ASSUME_NONNULL_END

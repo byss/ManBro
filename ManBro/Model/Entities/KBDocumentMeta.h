@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, nullable) NSData *html;
 
-+ (KBDocumentMeta *__nullable) fetchDocumentNamed: (NSString *) documentTitle section: (KBSection *) section;
++ (instancetype __nullable) fetchDocumentNamed: (NSString *) documentTitle section: (KBSection *) section;
 
 - (KBDocumentContent *) setContentHTML: (NSData *) contentHTML;
 

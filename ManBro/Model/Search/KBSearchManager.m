@@ -71,38 +71,61 @@
 		NSUInteger const lhsPrefixPrio = lhs.prefix.priority, rhsPrefixPrio = rhs.prefix.priority;
 		if (lhsPrefixPrio < rhsPrefixPrio) { return NSOrderedAscending; }
 		if (lhsPrefixPrio > rhsPrefixPrio) { return NSOrderedDescending; }
-		NSComparisonResult const sectionNameComparisonResult = [lhs.section.name compare:rhs.section.name];
+		NSComparisonResult const sectionNameComparisonResult = [lhs.section.name localizedStandardCompare:rhs.section.name];
 		if (sectionNameComparisonResult != NSOrderedSame) { return sectionNameComparisonResult; }
 		NSUInteger const lhsTitleLength = lhs.title.length, rhsTitleLength = rhs.title.length;
 		if (lhsTitleLength < rhsTitleLength) { return NSOrderedAscending; }
 		if (lhsTitleLength > rhsTitleLength) { return NSOrderedDescending; }
-		return [lhs.title compare:rhs.title];
+		return [lhs.title localizedStandardCompare:rhs.title];
 	}];
+}
+
+- (NSArray <id <NSFetchedResultsSectionInfo>> *) fetchDocumentsMatchingQuery: (KBSearchQuery *) searchQuery {
+	id <NSFetchedResultsSectionInfo> result [] = { nil, nil }, __strong *last = result;
+	(*last = [self fetchExactMatchesForQuery:searchQuery]) ? last++ : (void) 0;
+	(*last = [self fetchPartialMatchesForQuery:searchQuery]) ? last++ : (void) 0;
+	return [[NSArray alloc] initWithObjects:result count:last - result];
 }
 
 - (void) fetchDocumentsMatchingQuery: (KBSearchQuery *) searchQuery completion:(void (^)(NSArray <id <NSFetchedResultsSectionInfo>> *)) completion {
 	NSUInteger const operationToken = atomic_fetch_add_explicit (&_operationToken, 1, memory_order_relaxed) + 1;
-	if (!searchQuery) { return completion (@[]); }
+	if (!(searchQuery = [searchQuery copy])) { return completion (@[]); }
 
-	__block NSMutableArray <KBFetchedResultsSectionInfo *> *const result = [[NSMutableArray alloc] initWithCapacity:2];
+	__block id <NSFetchedResultsSectionInfo> exactMatches, partialMatches;
+	[self operation:operationToken runStep:^{ exactMatches = [self fetchExactMatchesForQuery:searchQuery]; }];
+	[self operation:operationToken runStep:^{ partialMatches = [self fetchPartialMatchesForQuery:searchQuery]; }];
 	[self operation:operationToken runStep:^{
-		KBFetchedResultsSectionInfo *const exactMatches = [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Exact matches", @"") objects:[self executeDocumentsFetchRequest:[searchQuery newFetchRequestForExactMatches]]];
+		NSMutableArray <id <NSFetchedResultsSectionInfo>> *const result = [[NSMutableArray alloc] initWithCapacity:2];
 		exactMatches ? [result addObject:exactMatches] : (void) 0;
-	} completion:^{
-		[self operation:operationToken runStep:^{
-			KBFetchedResultsSectionInfo *const partialMatches = [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Partial matches", @"") objects:[self executeDocumentsFetchRequest:[searchQuery newFetchRequestForPartialMatches]]];
-			partialMatches ? [result addObject:partialMatches] : (void) 0;
-		} completion:^{
-			completion (result);
-		}];
+		partialMatches ? [result addObject:partialMatches] : (void) 0;
+		completion ([[NSArray alloc] initWithArray:result]);
 	}];
 }
 
-- (void) operation: (NSUInteger) operationToken runStep: (void (^) (void)) operationStep completion: (void (^) (void)) completionBlock {
+- (void) operation: (NSUInteger) operationToken runStep: (dispatch_block_t) operationStep {
+	[self operation:operationToken runStep:operationStep completion:NULL];
+}
+
+- (void) operation: (NSUInteger) operationToken runStep: (dispatch_block_t) operationStep completion: (dispatch_block_t) completionBlock {
+	[self operation:operationToken runAction:operationStep];
+	completionBlock ? [self operation:operationToken runAction:completionBlock] : (void) 0;
+}
+
+- (void) operation: (NSUInteger) operationToken runAction: (dispatch_block_t) action {
+	__weak typeof (self) weakSelf = self;
 	[self.context performBlock:^{
-		if (self.operationToken == operationToken) { operationStep (); }
-		if (self.operationToken == operationToken) { completionBlock (); }
+		typeof (self) self = weakSelf;
+		if (self && (self.operationToken == operationToken)) { action (); }
 	}];
+}
+
+- (id <NSFetchedResultsSectionInfo>) fetchExactMatchesForQuery: (KBSearchQuery *) query {
+	return [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Exact matches", @"") objects:[self executeDocumentsFetchRequest:[query newFetchRequestForExactMatches]]];
+}
+
+- (id <NSFetchedResultsSectionInfo>) fetchPartialMatchesForQuery: (KBSearchQuery *) query {
+	if (!query.partialMatchingAllowed) { return nil; }
+	return [[KBFetchedResultsSectionInfo alloc] initWithName:NSLocalizedString (@"Partial matches", @"") objects:[self executeDocumentsFetchRequest:[query newFetchRequestForPartialMatches]]];
 }
 
 @end
@@ -112,6 +135,7 @@
 
 @interface KBMutableSearchQuery ()
 
+- (instancetype) initWithText: (NSString *__nullable) text;
 - (instancetype) initWithSearchQuery: (KBSearchQuery *) searchQuery;
 
 @end
@@ -154,7 +178,7 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 
 @implementation KBSearchQuery
 
-@dynamic prefixes, sections;
+@dynamic prefixes, sections, partialMatchingAllowed;
 
 + (instancetype) allocWithZone: (NSZone *) zone {
 	return (self == KBSearchQueryClass) ? [KBSearchQueryI allocWithZone:zone] : [super allocWithZone:zone];
@@ -185,13 +209,13 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 	} \
 	result; \
 })
-	return [self.searchPredicateTextValue isEqualToString:searchQuery.searchPredicateTextValue] && NSEqualsOrNils (self.prefixes, searchQuery.prefixes) && NSEqualsOrNils (self.sections, searchQuery.sections);
+	return [self.searchPredicateTextValue isEqualToString:searchQuery.searchPredicateTextValue] && NSEqualsOrNils (self.prefixes, searchQuery.prefixes) && NSEqualsOrNils (self.sections, searchQuery.sections) && (!self.partialMatchingAllowed == !searchQuery.partialMatchingAllowed);
 #undef _NSEqualsOrNils
 #undef NSEqualsOrNils
 }
 
 - (NSUInteger) hash {
-	return self.searchPredicateTextValue.hash ^ (self.prefixes.hash * 7) ^ (self.sections.hash * 17);
+	return self.searchPredicateTextValue.hash ^ (self.prefixes.hash * 7) ^ (self.sections.hash * 17) ^ (self.partialMatchingAllowed ? 0 : 31);
 }
 
 - (id) mutableCopyWithZone: (NSZone *) zone {
@@ -209,11 +233,11 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 	});
 	
 	NSFetchRequest *const result = [KBDocumentMeta fetchRequest];
+	result.resultType = NSManagedObjectResultType;
 	NSPredicate *const titleSubpredicate = [titleSubpredicateTemplate predicateWithSubstitutionVariables:@{@"title": self.searchPredicateTextValue}];
 	if (self.prefixes || self.sections) {
 		NSMutableArray <NSPredicate *> *const subpredicates = [[NSMutableArray alloc] initWithCapacity:3];
 		[subpredicates addObject:titleSubpredicate];
-		NSMutableArray <NSString *> *const propertiesToGroupBy = [[NSMutableArray alloc] initWithCapacity:2];
 		switch (self.sections.count) {
 			case 0:
 				break;
@@ -222,7 +246,6 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 				break;
 			default:
 				[subpredicates addObject:[sectionsSubpredicateTemplate predicateWithSubstitutionVariables:@{@"sections": self.sections}]];
-				[propertiesToGroupBy addObject:@"section"];
 		}
 		switch (self.prefixes.count) {
 			case 0:
@@ -232,14 +255,9 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 				break;
 			default:
 				[subpredicates addObject:[prefixesSubpredicateTemplate predicateWithSubstitutionVariables:@{@"prefixes": self.prefixes}]];
-				[propertiesToGroupBy addObject:@"section.prefix"];
 		}
-		
-		result.resultType = NSDictionaryResultType;
 		result.predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:subpredicates];
-		propertiesToGroupBy.count ? result.propertiesToGroupBy = propertiesToGroupBy : (void) 0;
 	} else {
-		result.resultType = NSManagedObjectResultType;
 		result.predicate = titleSubpredicate;
 	}
 	result.relationshipKeyPathsForPrefetching = @[@"section", @"section.prefix"];
@@ -286,7 +304,7 @@ extern char const _KBSearchQueryClass NS_UNAVAILABLE;
 
 @implementation KBSearchQueryI
 
-@synthesize prefixes = _prefixes, sections = _sections;
+@synthesize prefixes = _prefixes, sections = _sections, partialMatchingAllowed = _partialMatchingAllowed;
 
 static NSFetchRequest *KBSearchQueryCachingFetchRequestGetter (KBSearchQueryI *const self, SEL _cmd) {
 	NSCParameterAssert ([NSStringFromSelector (_cmd) hasPrefix:@"newF"]);
@@ -316,6 +334,7 @@ static NSFetchRequest *KBSearchQueryCachingFetchRequestGetter (KBSearchQueryI *c
 	if (self = [super initWithText:(id __nonnull) nil]) {
 		_text = [text copy];
 		_searchPredicateTextValue = searchPredicateTextValue;
+		_partialMatchingAllowed = YES;
 	}
 	return self;
 }
@@ -327,6 +346,7 @@ static NSFetchRequest *KBSearchQueryCachingFetchRequestGetter (KBSearchQueryI *c
 		_searchPredicateTextValue = [searchQuery.searchPredicateTextValue copy];
 		_prefixes = [searchQuery.prefixes copy];
 		_sections = [searchQuery.sections copy];
+		_partialMatchingAllowed = searchQuery.partialMatchingAllowed;
 	}
 	return self;
 }
@@ -340,22 +360,31 @@ static NSFetchRequest *KBSearchQueryCachingFetchRequestGetter (KBSearchQueryI *c
 @implementation KBMutableSearchQuery
 
 @dynamic text;
-@synthesize prefixes = _prefixes, sections = _sections;
+@synthesize prefixes = _prefixes, sections = _sections, partialMatchingAllowed = _partialMatchingAllowed;
 
 + (instancetype) new {
-	return [[self allocWithZone:nil] initWithSearchQuery:nil];
+	return [(KBMutableSearchQuery *) [self allocWithZone:nil] initWithText:nil];
 }
 
 - (instancetype) init {
-	return [self initWithSearchQuery:nil];
+	return [self initWithText:nil];
+}
+
+- (instancetype) initWithText: (NSString *) text {
+	if (self = [super initWithText:text]) {
+		self.text = text;
+		self.partialMatchingAllowed = YES;
+	}
+	return self;
 }
 
 - (instancetype) initWithSearchQuery: (KBSearchQuery *) searchQuery {
 	NSParameterAssert (searchQuery);
-	if (self = [super initWithText:(id __nonnull) nil]) {
+	if (self = [super initWithText:searchQuery.text]) {
 		self.text = searchQuery.text;
 		self.prefixes = searchQuery.prefixes;
 		self.sections = searchQuery.sections;
+		self.partialMatchingAllowed = searchQuery.partialMatchingAllowed;
 	}
 	return self;
 }

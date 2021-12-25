@@ -38,10 +38,16 @@
                     <toolbarItem implicitItemIdentifier="474FC67D-A2F6-4282-9215-4C31B3C7D25F" label="" paletteLabel="Back" tag="-1" image="NSGoBackTemplate" visibilityPriority="1010" navigational="YES" id="bC4-1i-ZIT">
                         <size key="minSize" width="24" height="28"/>
                         <size key="maxSize" width="24" height="28"/>
+                        <connections>
+                            <action selector="goBack:" target="-2" id="SXP-u9-xqH"/>
+                        </connections>
                     </toolbarItem>
                     <toolbarItem implicitItemIdentifier="81EDAE10-E72E-4526-B2A1-7933FD9AAB64" label="" paletteLabel="Forward" tag="-1" image="NSGoForwardTemplate" visibilityPriority="1010" navigational="YES" id="pKI-Kw-8Wl">
                         <size key="minSize" width="24.5" height="28"/>
                         <size key="maxSize" width="24.5" height="28"/>
+                        <connections>
+                            <action selector="goForward:" target="-2" id="Dy8-0Y-BRX"/>
+                        </connections>
                     </toolbarItem>
                     <searchToolbarItem implicitItemIdentifier="4B6B955B-0235-4953-81C6-243DA10D2161" explicitItemIdentifier="Search" label="" paletteLabel="Search" image="magnifyingglass" catalog="system" visibilityPriority="1001" id="Wmz-oF-hau">
                         <nil key="toolTip"/>

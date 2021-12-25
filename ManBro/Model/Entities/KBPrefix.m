@@ -28,7 +28,7 @@
 	return result;
 }
 
-+ (void) fetchInContext: (NSManagedObjectContext *) context completion: (void (^)(NSArray <KBPrefix *> *)) completion {
++ (void) fetchInContext: (NSManagedObjectContext *) context completion: (void (^)(NSArray <__kindof KBPrefix *> *)) completion {
 	[context executeFetchRequest:[self fetchRequest] completion:completion];
 }
 
