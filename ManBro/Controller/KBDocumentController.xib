@@ -19,7 +19,7 @@
         <window allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" tabbingMode="preferred" toolbarStyle="compact" id="F0z-JX-Cv5">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="196" y="240" width="737" height="356"/>
+            <rect key="contentRect" x="196" y="240" width="917" height="341"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1025"/>
             <view key="contentView" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="se5-gp-TjO">
                 <rect key="frame" x="0.0" y="0.0" width="512" height="341"/>
@@ -49,7 +49,23 @@
                             <action selector="goForward:" target="-2" id="Dy8-0Y-BRX"/>
                         </connections>
                     </toolbarItem>
-                    <searchToolbarItem implicitItemIdentifier="4B6B955B-0235-4953-81C6-243DA10D2161" explicitItemIdentifier="Search" label="" paletteLabel="Search" image="magnifyingglass" catalog="system" visibilityPriority="1001" id="Wmz-oF-hau">
+                    <toolbarItem implicitItemIdentifier="F0B71D7B-6FEB-4EB4-BBE5-F83DDD993110" label="" paletteLabel="Table of Contents" image="NSListViewTemplate" visibilityPriority="1010" navigational="YES" id="sna-Mk-ezG" customClass="KBToolbarItem">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="24" height="23"/>
+                        <size key="maxSize" width="82" height="32"/>
+                        <button key="view" verticalHuggingPriority="750" id="JGN-xa-omk">
+                            <rect key="frame" x="9" y="14" width="82" height="23"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <buttonCell key="cell" type="bevel" bezelStyle="regularSquare" image="NSListViewTemplate" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="7VY-rw-HQ8">
+                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                <font key="font" metaFont="system"/>
+                            </buttonCell>
+                        </button>
+                        <connections>
+                            <action selector="showTOC:" target="-2" id="ECn-hH-k0J"/>
+                        </connections>
+                    </toolbarItem>
+                    <searchToolbarItem implicitItemIdentifier="4B6B955B-0235-4953-81C6-243DA10D2161" explicitItemIdentifier="Search" label="" paletteLabel="Search" image="NSTouchBarSearchTemplate" visibilityPriority="1001" id="Wmz-oF-hau">
                         <nil key="toolTip"/>
                         <searchField key="view" verticalHuggingPriority="750" textCompletion="NO" id="t6k-WK-jpQ">
                             <rect key="frame" x="0.0" y="0.0" width="500" height="22"/>
@@ -68,18 +84,20 @@
                 <defaultToolbarItems>
                     <toolbarItem reference="bC4-1i-ZIT"/>
                     <toolbarItem reference="pKI-Kw-8Wl"/>
+                    <toolbarItem reference="sna-Mk-ezG"/>
                     <searchToolbarItem reference="Wmz-oF-hau"/>
                 </defaultToolbarItems>
             </toolbar>
             <connections>
                 <outlet property="delegate" destination="-2" id="0bl-1N-AYu"/>
             </connections>
-            <point key="canvasLocation" x="-172.5" y="83"/>
+            <point key="canvasLocation" x="-89.5" y="81.5"/>
         </window>
     </objects>
     <resources>
         <image name="NSGoBackTemplate" width="10" height="14"/>
         <image name="NSGoForwardTemplate" width="10" height="14"/>
-        <image name="magnifyingglass" catalog="system" width="16" height="15"/>
+        <image name="NSListViewTemplate" width="16" height="12"/>
+        <image name="NSTouchBarSearchTemplate" width="16" height="15"/>
     </resources>
 </document>

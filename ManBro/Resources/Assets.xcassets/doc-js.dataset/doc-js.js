@@ -2,7 +2,7 @@ HTML_MAN_SECTIONS = [
 	{ section_cls: 'Sh', header_tag: 'h1' },
 	{ section_cls: 'Ss', header_tag: 'h2' },
 ];
-HTML_MAN_TOC = []
+// HTML_MAN_TOC = []
 
 function getHeadings (root, level = 0) {
 	if (level >= HTML_MAN_SECTIONS.length) { return []; }
@@ -18,6 +18,7 @@ function getHeadings (root, level = 0) {
 	return result;
 }
 
+/*
 function tocToggle (btn) {
 	if (!btn) {
 		const tocDiv = document.getElementById ('html-man-toc');
@@ -71,3 +72,4 @@ if (document.readyState == 'loading') {
 } else {
 	generateTOC ();
 }
+*/

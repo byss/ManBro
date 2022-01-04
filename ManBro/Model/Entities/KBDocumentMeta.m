@@ -27,7 +27,7 @@
 
 @implementation KBDocumentMeta
 
-@dynamic filename, html, normalizedTitle, title, section;
+@dynamic filename, normalizedTitle, title, section;
 
 + (instancetype) fetchDocumentNamed: (NSString *) documentTitle section: (KBSection *) section {
 	static NSArray <NSString *> *properties = nil;
@@ -40,6 +40,7 @@
 
 - (KBPrefix *) prefix { return self.section.prefix; }
 - (NSData *) html { return self.content.html; }
+- (KBDocumentTOCItem *) toc { return self.content.toc; }
 
 - (void) setTitle: (NSString *) title {
 	[self setValue:title forKey:@"title" notifyObservers:YES additionalActions:^{ self.normalizedTitle = [title stringByPreparingForCaseInsensitiveComparisonPredicates]; }];
@@ -94,6 +95,10 @@
 	} else {
 		return [[KBDocumentContent alloc] initWithHTML:contentHTML meta:self];
 	}
+}
+
+- (KBDocumentTOCItem *) populateTOCUsingData: (id) tocData {
+	return [self.content populateTOCUsingData:tocData];
 }
 
 @end

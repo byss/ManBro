@@ -10,12 +10,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class KBDocumentTOCItem;
 @interface KBDocumentContent: KBFilesystemObject
 
 @property (nullable, nonatomic, copy) NSData *html;
+@property (nullable, nonatomic, strong) KBDocumentTOCItem *toc;
 @property (nonatomic, strong) KBDocumentMeta *meta;
 
 - (instancetype) initWithHTML: (NSData *) html meta: (KBDocumentMeta *) meta;
+
+- (KBDocumentTOCItem *) populateTOCUsingData: (id) tocData;
 
 @end
 

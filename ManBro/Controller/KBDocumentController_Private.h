@@ -45,5 +45,24 @@ typedef NS_ENUM(NSUInteger, KBDocumentRequestOptions) {
 
 @end
 
+@class KBDocumentTOCItem;
+@class KBDocumentControllerTOCPopover;
+@protocol KBDocumentControllerTOCPopoverDelegate <NSPopoverDelegate>
+
+@required
+- (void) tocPopover: (KBDocumentControllerTOCPopover *) popover didSelectTOCItem: (KBDocumentTOCItem *) item;
+
+@end
+
+@interface KBDocumentControllerTOCPopover: NSPopover
+
+@property (nullable, weak) id <KBDocumentControllerTOCPopoverDelegate> delegate;
+
+- (instancetype) init NS_UNAVAILABLE;
+- (instancetype) initWithCoder: (NSCoder *) coder NS_UNAVAILABLE;
+
+- (instancetype) initWithTOC: (KBDocumentTOCItem *) toc NS_DESIGNATED_INITIALIZER;
+
+@end
 
 NS_ASSUME_NONNULL_END

@@ -4,6 +4,7 @@
         <attribute name="generationIdentifier" attributeType="Binary"/>
         <attribute name="html" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
         <relationship name="meta" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DocumentMeta" inverseName="content" inverseEntity="DocumentMeta"/>
+        <relationship name="toc" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DocumentTOCItem" inverseName="content" inverseEntity="DocumentTOCItem"/>
     </entity>
     <entity name="DocumentMeta" representedClassName="KBDocumentMeta" syncable="YES">
         <attribute name="filename" optional="YES" attributeType="String"/>
@@ -19,6 +20,13 @@
         <fetchIndex name="byNormalizedTitleIndex">
             <fetchIndexElement property="normalizedTitle" type="Binary" order="ascending"/>
         </fetchIndex>
+    </entity>
+    <entity name="DocumentTOCItem" representedClassName="KBDocumentTOCItem" syncable="YES">
+        <attribute name="anchor" attributeType="String" minValueString="1" regularExpressionString="#.*"/>
+        <attribute name="title" attributeType="String" minValueString="1"/>
+        <relationship name="children" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="DocumentTOCItem" inverseName="parent" inverseEntity="DocumentTOCItem"/>
+        <relationship name="content" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DocumentContent" inverseName="toc" inverseEntity="DocumentContent"/>
+        <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DocumentTOCItem" inverseName="children" inverseEntity="DocumentTOCItem"/>
     </entity>
     <entity name="Prefix" representedClassName="KBPrefix" syncable="YES">
         <attribute name="generationIdentifier" optional="YES" attributeType="Binary"/>
@@ -43,8 +51,9 @@
         </fetchIndex>
     </entity>
     <elements>
-        <element name="DocumentContent" positionX="-54" positionY="45" width="128" height="74"/>
+        <element name="DocumentContent" positionX="-54" positionY="45" width="128" height="89"/>
         <element name="DocumentMeta" positionX="-63" positionY="-18" width="128" height="119"/>
+        <element name="DocumentTOCItem" positionX="-54" positionY="45" width="128" height="104"/>
         <element name="Prefix" positionX="-54" positionY="18" width="128" height="125"/>
         <element name="Section" positionX="-63" positionY="27" width="128" height="89"/>
     </elements>

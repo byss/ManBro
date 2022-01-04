@@ -1,9 +1,8 @@
 {
   "data" : [
     {
-      "filename" : "html-man.js",
-      "idiom" : "universal",
-      "universal-type-identifier" : "com.netscape.javascript-source"
+      "filename" : "doc-js.js",
+      "idiom" : "universal"
     }
   ],
   "info" : {

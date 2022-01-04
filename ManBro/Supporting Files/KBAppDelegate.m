@@ -99,7 +99,11 @@ static NSString *const KBPrefixUpdateLastTimestampKey = @"lastPrefixesScanTimest
 }
 
 - (BOOL) shouldScanPrefixesNow {
+#if DEBUG
+	return NO;
+#else
 	return !_indexManager && (!_prefixesScanTimestamp || (([NSDate timeIntervalSinceReferenceDate] - _prefixesScanTimestamp) > 3600.0));
+#endif
 }
 
 #if DEBUG

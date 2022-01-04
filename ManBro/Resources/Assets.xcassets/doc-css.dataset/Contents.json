@@ -1,9 +1,8 @@
 {
   "data" : [
     {
-      "filename" : "html-man.css",
-      "idiom" : "universal",
-      "universal-type-identifier" : "public.css"
+      "filename" : "doc-css.css",
+      "idiom" : "universal"
     }
   ],
   "info" : {

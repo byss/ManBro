@@ -8,12 +8,13 @@
 
 #import "KBDocumentContent.h"
 
+#import "KBDocumentTOCItem.h"
 #import "NSComparisonPredicate+convenience.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
 @implementation KBDocumentContent
 
-@dynamic meta, html;
+@dynamic meta, html, toc;
 
 + (NSPredicate *) staleObjectsPredicate { return [[NSComparisonPredicate alloc] initWithType:NSEqualToPredicateOperatorType forKeyPath:@"meta" value:[NSNull null]]; }
 
@@ -28,6 +29,15 @@
 - (void) willSave {
 	if (!self.meta  && !self.deleted) { [self.managedObjectContext deleteObject:self]; }
 	[super willSave];
+}
+
+- (KBDocumentTOCItem *) populateTOCUsingData: (id) tocData {
+	if (self.toc) {
+		[self.managedObjectContext deleteObject:self.toc];
+	}
+	KBDocumentTOCItem *const toc = [[KBDocumentTOCItem alloc] initRootItemWithContent:self];
+	[toc populateChildrenUsingData:tocData];
+	return toc;
 }
 
 @end
