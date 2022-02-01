@@ -26,7 +26,7 @@
 	return [sourceArray arrayByValidatingObjectsAsPropertyNamesForEntity:self.entity];
 }
 
-+ (NSFetchRequest <__kindof NSManagedObject *> *) fetchRequestForObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames {
++ (NSPredicate *) predicateMatchingObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames {
 	NSParameterAssert (values.count == propertyNames.count);
 	NSArray <NSString *> *const validatedNames = [self validatedArrayOfPropertyNames:propertyNames];
 	if (!validatedNames) {
@@ -36,14 +36,21 @@
 	}
 	
 	NSUInteger const count = propertyNames.count;
-	NSFetchRequest *const result = [self fetchRequest];
-	if (count) {
-		NSMutableArray <NSPredicate *> *subpredicates = [[NSMutableArray alloc] initWithCapacity:count];
-		for (NSUInteger i = 0; i < count; i++) {
-			[subpredicates addObject:[[NSComparisonPredicate alloc] initWithType:NSEqualToPredicateOperatorType forKeyPath:propertyNames [i] value:values [i]]];
-		}
-		result.predicate = [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:subpredicates];
+	switch (count) {
+	case 0: return nil;
+	case 1: return [[NSComparisonPredicate alloc] initWithType:NSEqualToPredicateOperatorType forKeyPath:propertyNames.firstObject value:values.firstObject];
 	}
+
+	NSMutableArray <NSPredicate *> *subpredicates = [[NSMutableArray alloc] initWithCapacity:count];
+	for (NSUInteger i = 0; i < count; i++) {
+		[subpredicates addObject:[[NSComparisonPredicate alloc] initWithType:NSEqualToPredicateOperatorType forKeyPath:propertyNames [i] value:values [i]]];
+	}
+	return [[NSCompoundPredicate alloc] initWithType:NSAndPredicateType subpredicates:subpredicates];
+}
+
++ (NSFetchRequest <__kindof NSManagedObject *> *) fetchRequestForObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames {
+	NSFetchRequest *const result = [self fetchRequest];
+	result.predicate = [self predicateMatchingObjectsWithValues:values forPropertiesNamed:propertyNames];
 	return result;
 }
 

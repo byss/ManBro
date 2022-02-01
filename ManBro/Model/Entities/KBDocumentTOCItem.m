@@ -8,41 +8,40 @@
 
 #import "KBDocumentTOCItem.h"
 
-#import "KBDocumentMeta.h"
 #import "KBDocumentContent.h"
+#import "NSManagedObject+convenience.h"
 #import "NSPersistentContainer+sharedContainer.h"
-
-@interface KBDocumentTOCItem (CoreDataGeneratedAccesssors)
-
-- (void) addChildrenObject: (KBDocumentTOCItem *) child;
-- (void) removeChildrenObject: (KBDocumentTOCItem *) child;
-
-@end
 
 @implementation KBDocumentTOCItem
 
 @dynamic anchor, title, content, children, parent;
 
 + (NSPredicate *) staleObjectsPredicate {
-	return [NSPredicate predicateWithFormat:@"content == nil AND parent == nil"];
+	return [self predicateMatchingObjectsWithValues:@[[NSNull null], [NSNull null]] forPropertiesNamed:@[@"content", @"parent"]];
 }
 
 - (instancetype) initRootItemWithContent: (KBDocumentContent *) content {
+	if (!content) { return nil; }
 	if (self = [self initWithContext:content.managedObjectContext]) {
 		self.anchor = @"#";
-		self.title = content.meta.title;
 		self.content = content;
+		self.title = content.meta.title;
 	}
 	return self;
 }
 
 - (instancetype) initWithParent: (KBDocumentTOCItem *) parent anchor: (NSString *) anchor title: (NSString *) title {
+	if (!(parent && anchor.length && title.length)) { return nil; }
 	if (self = [self initWithContext:parent.managedObjectContext]) {
 		self.anchor = anchor;
-		self.title = title;
 		self.parent = parent;
+		self.title = title;
 	}
 	return self;
+}
+
+- (KBDocumentMeta *) document {
+	return self.parent ? self.parent.document : self.content.meta;
 }
 
 - (BOOL) hasChildren {
@@ -50,14 +49,7 @@
 }
 
 - (NSUInteger) level {
-	if (self.content) {
-		return 0;
-	} else if (self.parent) {
-		return self.parent.level + 1;
-	} else {
-		NSAssert (NO, @"TOC item must have either content or parent set");
-		__builtin_unreachable ();
-	}
+	return self.parent ? (self.parent.level + 1) : 0;
 }
 
 - (void) willSave {
@@ -75,7 +67,6 @@
 		if (!([anchor isKindOfClass:[NSString class]] && [anchor hasPrefix:@"#"] && [title isKindOfClass:[NSString class]] && title.length)) { continue; }
 		KBDocumentTOCItem *const item = [[KBDocumentTOCItem alloc] initWithParent:self anchor:anchor title:title];
 		[item populateChildrenUsingData:childInfo [@"children"]];
-		[self addChildrenObject:item];
 	}
 }
 

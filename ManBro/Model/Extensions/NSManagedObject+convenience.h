@@ -16,6 +16,8 @@ NSDictionary <NSString *, id> *_KBVariables (NSString *keysString, ...);
 
 @interface NSManagedObject (convenience)
 
++ (NSPredicate *__nullable) predicateMatchingObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames;
+
 + (NSArray <NSString *> *__nullable) validatedArrayOfPropertyNames: (NSArray <NSString *> *) sourceArray;
 + (NSFetchRequest <__kindof NSManagedObject *> *) fetchRequestForObjectsWithValues: (NSArray *) values forPropertiesNamed: (NSArray <NSString *> *) propertyNames; 
 

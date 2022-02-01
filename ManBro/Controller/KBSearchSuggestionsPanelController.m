@@ -14,138 +14,71 @@
 #import "KBSection.h"
 #import "KBDocumentMeta.h"
 #import "KBSearchManager.h"
+#import "NSURL+filesystem.h"
+#import "NSObject+abstract.h"
+#import "KBDocumentLoading.h"
 #import "NSLayoutConstraint+convenience.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
-@interface KBDocumentControllerSuggestionsPanel () <NSTableViewDataSource, NSTableViewDelegate> {
+@interface KBSearchSuggestionsPanelController () <NSTableViewDataSource, NSTableViewDelegate> {
+	__unsafe_unretained IBOutlet NSView *_scrollView;
+	__unsafe_unretained IBOutlet NSTableView *_tableView;
+	__unsafe_unretained IBOutlet NSTextField *_noDocumentsLabel;
+
+	__unsafe_unretained IBOutlet NSLayoutConstraint *_maxWidthConstraint;
+	__unsafe_unretained IBOutlet NSLayoutConstraint *_maxHeightConstraint;
+
 	KBSearchManager *_searchManager;
 	NSInteger _clickedRow;
 }
 
+@property (nonatomic, readonly) KBDocumentController *documentController;
+
 @property (nonatomic, readonly, unsafe_unretained) NSView *scrollView;
 @property (nonatomic, readonly, unsafe_unretained) NSTableView *tableView;
-@property (nonatomic, readonly, unsafe_unretained) NSView *noDocumentsView;
+@property (nonatomic, readonly, unsafe_unretained) NSTextField *noDocumentsLabel;
 
 @property (nonatomic, readonly, unsafe_unretained) NSLayoutConstraint *maxWidthConstraint;
 @property (nonatomic, readonly, unsafe_unretained) NSLayoutConstraint *maxHeightConstraint;
-@property (nonatomic, readonly, unsafe_unretained) NSLayoutConstraint *tableWidthConstraint;
 
 @property (nonatomic, copy) NSArray *tableViewItems;
 
 @end
 
-@implementation KBDocumentControllerSuggestionsPanel
+@implementation KBSearchSuggestionsPanelController
 
-- (instancetype) initWithContentRect: (NSRect) contentRect styleMask: (NSWindowStyleMask) style backing: (NSBackingStoreType) backingStoreType defer: (BOOL) flag {
-	style = NSWindowStyleMaskBorderless | NSWindowStyleMaskTitled | NSWindowStyleMaskDocModalWindow | NSWindowStyleMaskNonactivatingPanel | NSWindowStyleMaskFullSizeContentView;
-	if (self = [super initWithContentRect:contentRect styleMask:style backing:backingStoreType defer:flag]) {
-		self.titleVisibility = NSWindowTitleHidden;
-		self.titlebarAppearsTransparent = YES;
-		self.floatingPanel = YES;
-		self.becomesKeyOnlyIfNeeded = YES;
-		self.level = NSModalPanelWindowLevel;
-		self.movable = NO;
-		self.releasedWhenClosed = NO;
-		self.worksWhenModal = YES;
-		
-		_searchManager = [[KBSearchManager alloc] initWithContext:[NSPersistentContainer sharedContainer].viewContext];
-		
-		NSRect const contentBounds = NSOffsetRect (contentRect, -NSMinX (contentRect), -NSMinY (contentRect));
-		
-		NSTableColumn *const column = [NSTableColumn new];
-		column.editable = NO;
-		column.resizingMask = NSTableColumnAutoresizingMask;
-		column.width = column.minWidth = 100.0;
+- (instancetype) init {
+	return [self initWithWindowNibName:@"KBSearchSuggestionsPanelController"];
+}
 
-		NSTableView *tableView = [[NSTableView alloc] initWithFrame:contentBounds];
-		tableView.translatesAutoresizingMaskIntoConstraints = NO;
-		[tableView setContentCompressionResistancePriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationVertical];
-		tableView.headerView = nil;
-		tableView.backgroundColor = [NSColor clearColor];
-		[tableView addTableColumn:column];
-		tableView.dataSource = self;
-		tableView.delegate = self;
-		_tableView = tableView;
-		_clickedRow = -1;
-		
-		NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:contentBounds];
-		scrollView.translatesAutoresizingMaskIntoConstraints = NO;
-		scrollView.hidden = YES;
-		scrollView.automaticallyAdjustsContentInsets = NO;
-		scrollView.hasVerticalScroller = YES;
-		scrollView.drawsBackground = NO;
-		scrollView.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-		scrollView.documentView = tableView;
-		_scrollView = scrollView;
-		
-		NSView *noDocumentsView = [[NSView alloc] initWithFrame:contentBounds];
-		noDocumentsView.translatesAutoresizingMaskIntoConstraints = NO;
-		
-		NSTextField *noDocumentsLabel = [NSTextField new];
-		noDocumentsLabel.translatesAutoresizingMaskIntoConstraints = NO;
-		noDocumentsLabel.stringValue = @"Nothing found";
-		noDocumentsLabel.editable = NO;
-		noDocumentsLabel.backgroundColor = [NSColor windowBackgroundColor];
-		noDocumentsLabel.bordered = NO;
-		[noDocumentsLabel setContentHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationHorizontal];
-		[noDocumentsLabel setContentHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationVertical];
-		[noDocumentsLabel setContentCompressionResistancePriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationHorizontal];
-		[noDocumentsLabel setContentCompressionResistancePriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationVertical];
-		[noDocumentsLabel sizeToFit];
-		[noDocumentsView addSubview:noDocumentsLabel];
-		_noDocumentsView = noDocumentsView;
-		
-		NSView *contentView = [[NSView alloc] initWithFrame:contentBounds];
-		contentView.translatesAutoresizingMaskIntoConstraints = NO;
-		[contentView addSubview:scrollView];
-		[contentView addSubview:noDocumentsView];
-		self.contentView = contentView;
-		
-		NSLayoutConstraint *const maxWidthConstraint = [contentView.widthAnchor constraintLessThanOrEqualToConstant:contentRect.size.width];
-		NSLayoutConstraint *const maxHeightConstraint = [contentView.heightAnchor constraintLessThanOrEqualToConstant:contentRect.size.height];
-		NSLayoutConstraint *const tableWidthConstraint = [tableView.widthAnchor constraintEqualToConstant:column.minWidth priority:NSLayoutPriorityDefaultHigh];
-
-		[NSLayoutConstraint activateAllConstraintsFrom:
-			maxWidthConstraint, maxHeightConstraint, tableWidthConstraint,
-		 
-			[scrollView constrainBoundsToSuperviewBounds],
-			[scrollView.contentView constrainBoundsToSuperviewBounds],
-		
-			[scrollView.heightAnchor constraintEqualToAnchor:tableView.heightAnchor priority:NSLayoutPriorityDefaultHigh],
-			
-			[scrollView.widthAnchor constraintEqualToAnchor:contentView.widthAnchor],
-			[scrollView.contentView.widthAnchor constraintEqualToAnchor:scrollView.widthAnchor],
-			[tableView.widthAnchor constraintLessThanOrEqualToAnchor:scrollView.contentView.widthAnchor],
-
-			[noDocumentsView constrainBoundsToSuperviewBounds],
-			[noDocumentsView.widthAnchor constraintEqualToConstant:0.0 priority:NSLayoutPriorityAlmostIgnored],
-
-			[noDocumentsLabel constrainCenterToSuperviewCenter],
-			[noDocumentsLabel.leadingAnchor constraintGreaterThanOrEqualToSystemSpacingAfterAnchor:noDocumentsView.leadingAnchor multiplier:1.0],
-			[noDocumentsLabel.topAnchor constraintGreaterThanOrEqualToSystemSpacingBelowAnchor:noDocumentsView.topAnchor multiplier:1.0],
-		 
-			nil
-		];
-		_maxWidthConstraint = maxWidthConstraint;
-		_maxHeightConstraint = maxHeightConstraint;
-		_tableWidthConstraint = tableWidthConstraint;
+- (instancetype) initWithWindow: (NSWindow *) window {
+	if (self = [super initWithWindow:window]) {
+		_searchManager = [KBSearchManager new];
 	}
 	return self;
+}
+
+- (KBDocumentController *) documentController {
+	return KB_DOWNCAST (KBDocumentController, self.window.parentWindow.windowController);
 }
 
 - (BOOL) isResizable {
 	return YES;
 }
 
+- (NSSize) maxSize {
+	return NSMakeSize (self.maxWidthConstraint.constant, self.maxHeightConstraint.constant);
+}
+
 - (void) setMaxSize: (NSSize) maxSize {
-	[super setMaxSize:maxSize];
 	self.maxWidthConstraint.constant = maxSize.width;
 	self.maxHeightConstraint.constant = maxSize.height;
 }
 
 - (void) setQueryText: (NSString *) queryText {
+	self.noDocumentsLabel.stringValue = NSLocalizedString (@"Searching…", nil);
 	[_searchManager fetchDocumentsMatchingQuery:[[KBSearchQuery alloc] initWithText:queryText] completion:^(NSArray <id <NSFetchedResultsSectionInfo>> *documents) {
-		[self setDocuments:documents];
+		self.documents = documents;
 	}];
 }
 
@@ -282,44 +215,45 @@ NS_INLINE NSInteger NSIntegerNormalizeModulo (NSInteger value, NSInteger modulus
 	if (!self.tableViewItems.count) {
 		return NO;
 	}
-	KBDocumentMeta *doc = self.tableViewItems [MAX (self.tableView.selectedRow, 1)];
-	[self.navigationDelegate searchPanel:self didRequestDocument:doc options:KBReplaceCurrentContext];
+	[self openDocument:self.tableViewItems [MAX (self.tableView.selectedRow, 1)]];
 	return YES;
 }
 
 - (void) setDocuments: (NSArray <id <NSFetchedResultsSectionInfo>> *) documents {
-	NSManagedObjectID *selectedID = (self.tableView.selectedRow < 0) ? nil : [self.tableViewItems [self.tableView.selectedRow] objectID];
-	
 	NSUInteger itemsCount = 0;
 	for (id <NSFetchedResultsSectionInfo> section in documents) {
 		NSUInteger const objectsCount = section.numberOfObjects;
 		itemsCount += objectsCount ? objectsCount + 1 : 0;
 	}
+	
+	NSManagedObjectContext *const context = [NSPersistentContainer sharedContainer].viewContext;
 	NSMutableArray *tableViewItems = [[NSMutableArray alloc] initWithCapacity:itemsCount];
 	for (id <NSFetchedResultsSectionInfo> section in documents) {
 		if (!section.numberOfObjects) { continue; }
 		[tableViewItems addObject:section];
-		[tableViewItems addObjectsFromArray:section.objects];
+		NSArray <NSManagedObjectID *> *const objectIDs = [section.objects valueForKey:@"objectID"];
+		[context performBlockAndWait:^{
+			for (NSManagedObjectID *objectID in objectIDs) {
+				[tableViewItems addObject:[context objectWithID:objectID]];
+			}
+		}];
 	}
-	self.tableViewItems = tableViewItems;
-
-	[self.tableView reloadData];
-	[self.tableViewItems enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-		if ([obj isKindOfClass:[KBDocumentMeta class]] && [selectedID isEqual:[obj objectID]]) {
-			*stop = YES;
-			[self selectRow:idx scrollToSelection:YES];
-		}
-	}];
 	
-	NSTableColumn *const column = self.tableView.tableColumns.firstObject;
-	CGFloat maxWidth = column.minWidth;
-	NSRange const visibleRows = [self visibleRows];
-	for (NSUInteger row = visibleRows.location; row < NSMaxRange (visibleRows); row++) {
-		maxWidth = MAX (maxWidth, [self ceilValue:[[column dataCellForRow:row] cellSize].width]);
-	}
-	self.tableWidthConstraint.constant = maxWidth;
-
-	self.noDocumentsView.hidden = !(self.scrollView.hidden = !tableViewItems.count);
+	dispatch_async (dispatch_get_main_queue (), ^{
+		NSManagedObjectID *selectedID = (self.tableView.selectedRow < 0) ? nil : [self.tableViewItems [self.tableView.selectedRow] objectID];
+		self.tableViewItems = tableViewItems;
+		
+		[self.tableView reloadData];
+		[self.tableViewItems enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+			if ([obj isKindOfClass:[KBDocumentMeta class]] && [selectedID isEqual:[obj objectID]]) {
+				*stop = YES;
+				[self selectRow:idx scrollToSelection:YES];
+			}
+		}];
+		
+		self.noDocumentsLabel.hidden = !!tableViewItems.count;
+		self.noDocumentsLabel.stringValue = NSLocalizedString (@"Nothing found", nil);
+	});
 }
 
 - (NSInteger) numberOfRowsInTableView: (NSTableView *) tableView {
@@ -334,7 +268,10 @@ NS_INLINE NSInteger NSIntegerNormalizeModulo (NSInteger value, NSInteger modulus
 	id const object = self.tableViewItems [row];
 	if ([object isKindOfClass:[KBDocumentMeta class]]) {
 		KBDocumentMeta *const doc = object;
-		return [[NSString alloc] initWithFormat:@"%@ (%@) – %s", doc.title, doc.section.name, doc.URL.fileSystemRepresentation];
+		NSMutableAttributedString *const result = [[NSMutableAttributedString alloc] initWithString:doc.presentationTitle attributes:@{NSForegroundColorAttributeName: [NSColor controlTextColor]}];
+		[result appendAttributedString:[[NSAttributedString alloc] initWithString:@"\t"]];
+		[result appendAttributedString:[[NSAttributedString alloc] initWithString:doc.URL.fileSystemPath attributes:@{NSForegroundColorAttributeName: [NSColor disabledControlTextColor]}]];
+		return result;
 	} else if ([object conformsToProtocol:@protocol (NSFetchedResultsSectionInfo)]) {
 		return [object name];
 	} else {
@@ -348,23 +285,18 @@ NS_INLINE NSInteger NSIntegerNormalizeModulo (NSInteger value, NSInteger modulus
 	return ![self tableView:tableView isGroupRow:row];
 }
 
-- (void) tableViewSelectionIsChanging: (NSNotification *) notification {
-	if (self.currentEvent.type == NSEventTypeLeftMouseDown) {
-		_clickedRow = [self.tableView rowAtPoint:[self.tableView convertPoint:self.currentEvent.locationInWindow fromView:nil]];
-	} else {
-		_clickedRow = -1;
+- (IBAction) tableViewCellClicked: (NSTableView *) sender {
+	if (sender.clickedRow < 0) { return; }
+	KBDocumentMeta *const document = self.tableViewItems [sender.clickedRow];
+	if ([document isKindOfClass:[KBDocumentMeta class]]) {
+		[self openDocument:document];
 	}
 }
 
-- (void) tableView: (NSTableView *) tableView willDisplayCell: (id) cell forTableColumn: (NSTableColumn *) tableColumn row: (NSInteger) row {
-	self.tableWidthConstraint.constant = MAX (self.tableWidthConstraint.constant, [self ceilValue:[cell cellSize].width]);
-}
-
-- (void) tableViewSelectionDidChange: (NSNotification *) notification {
-	if (_clickedRow == self.tableView.selectedRow) {
-		[self confirmSuggestionSelection];
-		_clickedRow = -1;
-	}
+- (void) openDocument: (KBDocumentMeta *) document {
+	NSUInteger const targetIdentifier = (self.window.currentEvent.modifierFlags & NSEventModifierFlagCommand) ? 0 : self.documentController.identifier;
+	[KBDocumentController openURL:[[NSURL alloc] initWithTargetURL:document.loaderURI sourceIdentifier:self.documentController.identifier targetIdentifier:targetIdentifier]];
+	[self close];
 }
 
 @end

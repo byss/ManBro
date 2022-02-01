@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="709-Kq-VSt">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Document Split Controller-->
+        <scene sceneID="184-HL-TXP">
+            <objects>
+                <splitViewController id="709-Kq-VSt" customClass="KBDocumentSplitController" sceneMemberID="viewController">
+                    <splitViewItems>
+                        <splitViewItem canCollapse="YES" collapsed="YES" holdingPriority="260" behavior="sidebar" id="ah9-1A-muM"/>
+                        <splitViewItem id="qwv-cK-uPO"/>
+                    </splitViewItems>
+                    <splitView key="splitView" dividerStyle="thin" vertical="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Mx6-07-GzA">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    </splitView>
+                    <connections>
+                        <outlet property="_contentItem" destination="qwv-cK-uPO" id="wua-pD-ac8"/>
+                        <outlet property="_tocItem" destination="ah9-1A-muM" id="ScZ-dT-LuY"/>
+                        <segue destination="Nc2-5c-GvT" kind="relationship" relationship="splitItems" id="jTO-eO-OmG"/>
+                        <segue destination="cmX-tY-18F" kind="relationship" relationship="splitItems" id="7z4-Nt-gIE"/>
+                    </connections>
+                </splitViewController>
+                <customObject id="4mV-0z-GsY" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="399" y="-367"/>
+        </scene>
+        <!--KBDocumentTOCController-->
+        <scene sceneID="c9g-ak-AsB">
+            <objects>
+                <controllerPlaceholder storyboardName="KBDocumentTOCController" id="Nc2-5c-GvT" sceneMemberID="viewController"/>
+                <customObject id="iba-51-xRf" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="931" y="-420"/>
+        </scene>
+        <!--KBDocumentContentController-->
+        <scene sceneID="K07-Jk-nn5">
+            <objects>
+                <controllerPlaceholder storyboardName="KBDocumentContentController" id="cmX-tY-18F" sceneMemberID="viewController"/>
+                <customObject id="d6G-Sy-bVk" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="942" y="-328"/>
+        </scene>
+    </scenes>
+</document>

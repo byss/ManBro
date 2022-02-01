@@ -8,6 +8,9 @@
 
 #import "NSLayoutConstraint+convenience.h"
 
+#import <objc/message.h>
+#import <objc/runtime.h>
+
 @implementation NSLayoutConstraint (convenience)
 
 + (void) activateAllConstraintsFrom: (id) firstObject, ... {
@@ -44,24 +47,68 @@
 
 @implementation NSView (convenience)
 
+static NSArray <NSLayoutConstraint *> *KBAnchorsSourceConstrainBoundsToItemBounds (id <KBAnchorsSource> self, SEL _cmd, id <KBAnchorsSource> otherItem) {
+	return KBAnchorsSourceConstrainBoundsToItemBoundsWithDirectionalInsets (self, _cmd, otherItem, NSDirectionalEdgeInsetsZero);
+}
+
+static NSArray <NSLayoutConstraint *> *KBAnchorsSourceConstrainBoundsToItemBoundsWithInsets (id <KBAnchorsSource> self, SEL _cmd, id <KBAnchorsSource> otherItem, NSEdgeInsets insets) {
+	return KBAnchorsSourceConstrainBoundsToItemBoundsImpl (self, _cmd, otherItem, insets.top, insets.bottom, insets.left, insets.right, @selector (leftAnchor), @selector (rightAnchor));
+}
+
+static NSArray <NSLayoutConstraint *> *KBAnchorsSourceConstrainBoundsToItemBoundsWithDirectionalInsets (id <KBAnchorsSource> self, SEL _cmd, id <KBAnchorsSource> otherItem, NSDirectionalEdgeInsets insets) {
+	return KBAnchorsSourceConstrainBoundsToItemBoundsImpl (self, _cmd, otherItem, insets.top, insets.bottom, insets.leading, insets.trailing, @selector (leadingAnchor), @selector (trailingAnchor));
+}
+
+static NSArray <NSLayoutConstraint *> *KBAnchorsSourceConstrainBoundsToItemBoundsImpl (NSObject <KBAnchorsSource> *self, SEL _cmd, NSObject <KBAnchorsSource> *otherItem, CGFloat top, CGFloat bottom, CGFloat firstHoriz, CGFloat secondHoriz, SEL firstGetter, SEL secondGetter) {
+	NSParameterAssert (otherItem);
+	return @[
+		[self.topAnchor constraintEqualToAnchor:otherItem.topAnchor constant:top],
+		[otherItem.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:bottom],
+		[[self valueForKey:NSStringFromSelector (firstGetter)] constraintEqualToAnchor:[otherItem valueForKey:NSStringFromSelector (firstGetter)] constant:firstHoriz],
+		[[otherItem valueForKey:NSStringFromSelector (secondGetter)] constraintEqualToAnchor:[self valueForKey:NSStringFromSelector (secondGetter)] constant:secondHoriz],
+	];
+}
+
+static NSArray <NSLayoutConstraint *> *KBAnchorsSourceConstrainCenterToItemCenter (id <KBAnchorsSource> self, SEL _cmd, id <KBAnchorsSource> otherItem) {
+	return KBAnchorsSourceConstrainCenterToItemCenterWithOffset (self, _cmd, otherItem, NSZeroSize);
+}
+
+static NSArray <NSLayoutConstraint *> *KBAnchorsSourceConstrainCenterToItemCenterWithOffset (id <KBAnchorsSource> self, SEL _cmd, id <KBAnchorsSource> otherItem, NSSize offset) {
+	NSParameterAssert (otherItem);
+	return @[
+		[self.centerXAnchor constraintEqualToAnchor:otherItem.centerXAnchor constant:offset.width],
+		[self.centerYAnchor constraintEqualToAnchor:otherItem.centerYAnchor constant:offset.height],
+	];
+}
+
++ (void) load {
+	static struct {
+		char const *viewSelector;
+		char const *anchorsSourceSelector;
+		IMP implementation;
+		char const *typeEncoding;
+	} const selectors [] = {
+		{ "constrainCenterToViewCenter:", "constrainCenterToItemCenter:", (IMP) KBAnchorsSourceConstrainCenterToItemCenter, "@@:@" },
+		{ "constrainCenterToViewCenter:offset:", "constrainCenterToItemCenter:offset:", (IMP) KBAnchorsSourceConstrainCenterToItemCenterWithOffset, "@@:@{CGSize=dd}" },
+		{ "constrainBoundsToViewBounds:", "constrainBoundsToItemBounds:", (IMP) KBAnchorsSourceConstrainBoundsToItemBounds, "@@:@" },
+		{ "constrainBoundsToViewBounds:withInsets:;", "constrainBoundsToItemBounds:withInsets:", (IMP) KBAnchorsSourceConstrainBoundsToItemBoundsWithInsets, "@@:@{NSEdgeInsets=dddd}" },
+		{ "constrainBoundsToViewBounds:withDirectionalInsets:", "constrainBoundsToItemBounds:withDirectionalInsets:", (IMP) KBAnchorsSourceConstrainBoundsToItemBoundsWithDirectionalInsets, "@@:@{NSDirectionalEdgeInsets=dddd}" },
+		{ NULL, NULL },
+	};
+	Class const viewClass = [NSView class], layoutGuideClass = [NSLayoutGuide class];
+	for (typeof (*selectors) *i = selectors; i->viewSelector; i++) {
+		class_addMethod (viewClass, sel_getUid (i->viewSelector), i->implementation, i->typeEncoding);
+		class_addMethod (viewClass, sel_getUid (i->anchorsSourceSelector), i->implementation, i->typeEncoding);
+		class_addMethod (layoutGuideClass, sel_getUid (i->anchorsSourceSelector), i->implementation, i->typeEncoding);
+	}
+}
+
 - (NSArray <NSLayoutConstraint *> *) constrainCenterToSuperviewCenter {
 	return [self constrainCenterToViewCenter:self.superview];
 }
 
-- (NSArray <NSLayoutConstraint *> *) constrainCenterToSuperviewCenterWithOffset: (CGSize) offset {
+- (NSArray <NSLayoutConstraint *> *) constrainCenterToSuperviewCenterWithOffset: (NSSize) offset {
 	return [self constrainCenterToViewCenter:self.superview offset:offset];
-}
-
-- (NSArray <NSLayoutConstraint *> *) constrainCenterToViewCenter: (NSView *) otherView {
-	return [self constrainCenterToViewCenter:otherView offset:CGSizeZero];
-}
-
-- (NSArray <NSLayoutConstraint *> *) constrainCenterToViewCenter: (NSView *) otherView offset: (CGSize) offset {
-	NSParameterAssert (otherView);
-	return @[
-		[self.centerXAnchor constraintEqualToAnchor:otherView.centerXAnchor constant:offset.width],
-		[self.centerYAnchor constraintEqualToAnchor:otherView.centerYAnchor constant:offset.height],
-	];
 }
 
 - (NSArray <NSLayoutConstraint *> *) constrainBoundsToSuperviewBounds {
@@ -74,28 +121,6 @@
 
 - (NSArray <NSLayoutConstraint *> *) constrainBoundsToSuperviewBoundsWithDirectionalInsets: (NSDirectionalEdgeInsets) insets {
 	return [self constrainBoundsToViewBounds:self.superview withDirectionalInsets:insets];
-}
-
-- (NSArray <NSLayoutConstraint *> *) constrainBoundsToViewBounds: (NSView *) otherView {
-	return [self constrainBoundsToViewBounds:otherView withDirectionalInsets:NSDirectionalEdgeInsetsZero];
-}
-
-- (NSArray <NSLayoutConstraint *> *) constrainBoundsToViewBounds: (NSView *) otherView withInsets: (NSEdgeInsets) insets {
-	return [self constrainBoundsToViewBounds:otherView insetValues:insets.top :insets.bottom :insets.left :insets.right anchorsGetters:@selector (leftAnchor) :@selector (rightAnchor)];
-}
-
-- (NSArray <NSLayoutConstraint *> *) constrainBoundsToViewBounds: (NSView *) otherView withDirectionalInsets: (NSDirectionalEdgeInsets) insets {
-	return [self constrainBoundsToViewBounds:otherView insetValues:insets.top :insets.bottom :insets.leading :insets.trailing anchorsGetters:@selector (leadingAnchor) :@selector (trailingAnchor)];
-}
-
-- (NSArray <NSLayoutConstraint *> *) constrainBoundsToViewBounds: (NSView *) otherView insetValues: (CGFloat) top : (CGFloat) bottom : (CGFloat) firstHoriz : (CGFloat) secondHoriz anchorsGetters: (SEL) firstGetter : (SEL) secondGetter {
-	NSParameterAssert (otherView);
-	return @[
-		[self.topAnchor constraintEqualToAnchor:otherView.topAnchor constant:top],
-		[otherView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:bottom],
-		[[self valueForKey:NSStringFromSelector (firstGetter)] constraintEqualToAnchor:[otherView valueForKey:NSStringFromSelector (firstGetter)] constant:firstHoriz],
-		[[otherView valueForKey:NSStringFromSelector (secondGetter)] constraintEqualToAnchor:[self valueForKey:NSStringFromSelector (secondGetter)] constant:secondHoriz],
-	];
 }
 
 @end
@@ -168,7 +193,40 @@
 
 @end
 
-@implementation NSWindow (rounding)
+static void KBPixelRoundingSetup (Class self, SEL implGetter) {
+	static unsigned methodCount;
+	static struct objc_method_description *methods;
+	static dispatch_once_t onceToken;
+	dispatch_once (&onceToken, ^{
+		methods = protocol_copyMethodDescriptionList (@protocol (KBPixelRounding), YES, YES, &methodCount);
+	});
+	id <KBPixelRounding> (*implGetterIMP) (id, SEL) = (typeof (implGetterIMP)) class_getMethodImplementation (self, implGetter);
+	for (unsigned i = 0; i < methodCount; i++) {
+		struct objc_method_description const *const method = methods + i;
+		IMP impl;
+		if (method->name == @selector (roundValue:mode:)) {
+			impl = imp_implementationWithBlock (^(id self, CGFloat value, int roundingMode) {
+				return [implGetterIMP (self, implGetter) roundValue:value mode:roundingMode];
+			});
+		} else {
+			impl = imp_implementationWithBlock (^(id self, CGFloat value) {
+				return ((CGFloat (*) (id, SEL, CGFloat)) objc_msgSend) (implGetterIMP (self, implGetter), method->name, value);
+			});
+		}
+		class_addMethod (self, method->name, impl, method->types);
+	}
+}
+
+@implementation NSWindow (KBPixelRounding)
+
++ (void) load {
+	static dispatch_once_t onceToken;
+	dispatch_once (&onceToken, ^{
+		KBPixelRoundingSetup ([NSView class], @selector (window));
+		KBPixelRoundingSetup ([NSWindowController class], @selector (window));
+		KBPixelRoundingSetup ([NSViewController class], @selector (view));
+	});
+}
 
 - (CGFloat) ceilValue: (CGFloat) value {
 	return [self roundValue:value mode:FE_UPWARD];

@@ -17,6 +17,7 @@
 #import "KBSection.h"
 #import "KBManPageTasks.h"
 #import "KBSearchManager.h"
+#import "NSURL+filesystem.h"
 #import "NSError+convenience.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
@@ -84,18 +85,28 @@
 
 - (void) resolveManURL: (NSURL *) url relativeToDocumentURL: (NSURL *) documentURL completion: (void (^)(NSURL *, NSError *)) completion {
 	if (![url.scheme isEqualToString:KBManScheme]) { return completion (nil, [[NSError alloc] initUnsupportedURLErrorWithFailingURL:url]); }
+	
+	[self resolveManDocumentSearchURL:url relativeToDocumentURL:documentURL completion:^(NSURL *result, NSError *error) {
+		if (result || !error.isBadURLError) { return completion (result, error); }
+		[self resolveLocalManFileURL:url completion:completion];
+	}];
+}
 
+- (void) resolveManDocumentSearchURL: (NSURL *) url relativeToDocumentURL: (NSURL *) documentURL completion: (void (^) (NSURL *, NSError *)) completion {
+	NSString *const host = url.host;
 	NSArray <NSString *> *const pathComponents = url.pathComponents;
-	NSString *documentTitle, *sectionName;
-	if (pathComponents.count > 1) {
-		sectionName = url.host;
-		documentTitle = [[pathComponents subarrayWithRange:NSMakeRange (1, pathComponents.count - 1)] componentsJoinedByString:@"/"];
-	} else {
-		documentTitle = url.host;
+	NSString *documentTitle = nil, *sectionName;
+	switch (pathComponents.count) {
+	case 0: case 1:
+		documentTitle = host;
+		break;
+	case 2:
+		sectionName = host;
+		documentTitle = pathComponents.lastObject;
+		break;
 	}
 	if (!documentTitle.length) { return completion (nil, [[NSError alloc] initBadURLErrorWithFailingURL:url]); }
 	
-	NSPersistentContainer *const container = [NSPersistentContainer sharedContainer];
 	NSManagedObjectID *documentID = nil;
 	if (documentURL) {
 		NSError *documentError;
@@ -103,15 +114,11 @@
 		if (!documentID) { return completion (nil, documentError); }
 	}
 
-	[container performBackgroundTask:^(NSManagedObjectContext *context) {
+	[[NSPersistentContainer sharedContainer] performBackgroundTask:^(NSManagedObjectContext *context) {
 		KBSearchManager *const searchMgr = [[KBSearchManager alloc] initWithContext:context];
 		NSURL *redirectURL = [self fetchDocumentTitled:documentTitle inSectionNamed:sectionName forRefererID:documentID searchManager:searchMgr];
 		if (!redirectURL) { redirectURL = [self fetchDocumentTitled:documentTitle inSectionNamed:sectionName searchManager:searchMgr]; }
-		if (redirectURL) {
-			return completion (redirectURL, nil);
-		} else {
-			return completion (nil, [[NSError alloc] initResourceUnavailableErrorWithFailingURL:url]);
-		}
+		completion (redirectURL, redirectURL ? nil : [[NSError alloc] initResourceUnavailableErrorWithFailingURL:url]);
 	}];
 }
 
@@ -139,6 +146,42 @@
 		if (!sections.count) { return nil; }
 		query.sections = [[NSSet alloc] initWithArray:sections];
 	}
+	return [self searchManager:searchManager loaderURLForDocumentBestMatchingQuery:query];
+}
+
+- (void) resolveLocalManFileURL: (NSURL *) url completion: (void (^) (NSURL *, NSError *)) completion {
+	[url checkHostResolvesToCurrentMachineWithCompletion:^(BOOL result, NSError *error) {
+		if (!result) { return completion (nil, error); }
+		
+		[[NSPersistentContainer sharedContainer] performBackgroundTask:^(NSManagedObjectContext *context) {
+			NSURL *const fileURL = [[NSURL alloc] initFileURLWithFileSystemRepresentation:url.path.UTF8String isDirectory:NO relativeToURL:nil];
+			NSError *fileError = nil;
+			if (![fileURL isReadableRegularFile:&fileError]) { return completion (nil, fileError); }
+			
+			KBSearchManager *const searchMgr = [[KBSearchManager alloc] initWithContext:context];
+			NSURL *const result = [self fetchDocumentWithFileURL:fileURL searchManager:searchMgr];
+			completion (result, result ? nil : [[NSError alloc] initResourceUnavailableErrorWithFailingURL:fileURL]);
+		}];
+	}];
+}
+
+- (NSURL *) fetchDocumentWithFileURL: (NSURL *) fileURL searchManager: (KBSearchManager *) searchManager {
+	NSString *const documentTitle = fileURL.manDocumentTitle;
+	if (!documentTitle) { return nil; }
+	
+	NSURL *const sectionURL = fileURL.URLByDeletingLastPathComponent;
+	NSString *const sectionName = fileURL.URLByDeletingLastPathComponent.manSectionName;
+	if (!sectionName) { return nil; }
+	
+	NSURL *const prefixURL = sectionURL.URLByDeletingLastPathComponent;
+	KBPrefix *const prefix = [KBPrefix fetchPrefixWithURL:prefixURL createIfNeeded:NO context:searchManager.context];
+	if (!prefix) { return nil; }
+	
+	KBSection *const section = [prefix sectionNamed:sectionName createIfNeeded:NO];
+	if (!section) { return nil; }
+	
+	KBMutableSearchQuery *const query = [[KBMutableSearchQuery alloc] initWithText:documentTitle];
+	query.sections = [[NSSet alloc] initWithObjects:section, nil];
 	return [self searchManager:searchManager loaderURLForDocumentBestMatchingQuery:query];
 }
 
@@ -296,6 +339,10 @@
 	[pathComponents insertObject:objectURI.host atIndex:0];
 	result.path = [@"/" stringByAppendingPathComponents:pathComponents];
 	return result.URL;
+}
+
+- (NSString *) presentationTitle {
+	return [NSString localizedStringWithFormat:NSLocalizedString (@"%@ (%@)", nil), self.title, self.section.name];
 }
 
 + (NSManagedObjectID *) objectIDWithLoaderURI: (NSURL *) loaderURI error: (NSError *__autoreleasing *) error {

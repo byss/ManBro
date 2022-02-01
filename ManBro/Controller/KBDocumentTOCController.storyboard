@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="hsD-yK-hFk">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+        <capability name="NSView safe area layout guides" minToolsVersion="12.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--DocumentTOC Controller-->
+        <scene sceneID="oTF-ys-1a6">
+            <objects>
+                <viewController storyboardIdentifier="NSViewController-hsD-yK-hFk" id="hsD-yK-hFk" customClass="KBDocumentTOCController" sceneMemberID="viewController">
+                    <customView key="view" translatesAutoresizingMaskIntoConstraints="NO" id="qZ2-2M-MkC">
+                        <rect key="frame" x="0.0" y="0.0" width="188" height="148"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <scrollView focusRingType="none" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" horizontalScrollElasticity="none" translatesAutoresizingMaskIntoConstraints="NO" id="wgW-ns-xTA">
+                                <rect key="frame" x="0.0" y="0.0" width="188" height="96"/>
+                                <clipView key="contentView" focusRingType="none" drawsBackground="NO" id="upH-s0-Cd3">
+                                    <rect key="frame" x="0.0" y="0.0" width="188" height="96"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <outlineView focusRingType="none" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" allowsExpansionToolTips="YES" tableStyle="plain" columnReordering="NO" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" indentationPerLevel="16" autosaveExpandedItems="YES" autoresizesOutlineColumn="YES" outlineTableColumn="wlB-uY-kfk" translatesAutoresizingMaskIntoConstraints="NO" id="PIP-ad-fXC">
+                                            <rect key="frame" x="0.0" y="10" width="188" height="76"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <size key="intercellSpacing" width="3" height="2"/>
+                                            <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="custom" customColorSpace="displayP3"/>
+                                            <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                            <tableColumns>
+                                                <tableColumn editable="NO" width="185" minWidth="16" maxWidth="1000" id="wlB-uY-kfk">
+                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
+                                                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                    </tableHeaderCell>
+                                                    <textFieldCell key="dataCell" lineBreakMode="truncatingTail" allowsUndo="NO" usesSingleLineMode="YES" id="apt-Hw-M2l">
+                                                        <font key="font" metaFont="system"/>
+                                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    </textFieldCell>
+                                                    <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
+                                                </tableColumn>
+                                            </tableColumns>
+                                            <connections>
+                                                <action selector="tocCellClicked:" target="hsD-yK-hFk" id="eXU-9g-QJD"/>
+                                                <outlet property="dataSource" destination="hsD-yK-hFk" id="cM6-jL-K0N"/>
+                                                <outlet property="delegate" destination="hsD-yK-hFk" id="HVt-pg-4LI"/>
+                                            </connections>
+                                        </outlineView>
+                                    </subviews>
+                                    <nil key="backgroundColor"/>
+                                    <edgeInsets key="contentInsets" left="0.0" right="0.0" top="10" bottom="10"/>
+                                </clipView>
+                                <edgeInsets key="contentInsets" left="0.0" right="0.0" top="0.0" bottom="0.0"/>
+                                <scroller key="horizontalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="YES" id="frZ-dx-PUm">
+                                    <rect key="frame" x="-100" y="-100" width="480" height="16"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                                <scroller key="verticalScroller" hidden="YES" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="wSN-Cw-Nds">
+                                    <rect key="frame" x="212" y="0.0" width="16" height="14"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                                <connections>
+                                    <outlet property="nextKeyView" destination="PIP-ad-fXC" id="Hu3-Jy-eb6"/>
+                                </connections>
+                            </scrollView>
+                            <textField horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="bKG-Xy-1Pb">
+                                <rect key="frame" x="38" y="40" width="112" height="16"/>
+                                <textFieldCell key="cell" lineBreakMode="clipping" enabled="NO" title="Cannot load TOC." id="tuK-qT-FjA">
+                                    <font key="font" usesAppearanceFont="YES"/>
+                                    <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="wgW-ns-xTA" firstAttribute="bottom" secondItem="EQj-mK-hpk" secondAttribute="bottom" id="3Gg-Y7-QMU"/>
+                            <constraint firstItem="wgW-ns-xTA" firstAttribute="leading" secondItem="EQj-mK-hpk" secondAttribute="leading" id="4ic-8g-i2v"/>
+                            <constraint firstItem="bKG-Xy-1Pb" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="EQj-mK-hpk" secondAttribute="leading" constant="20" symbolic="YES" id="B3o-VQ-AGa"/>
+                            <constraint firstItem="bKG-Xy-1Pb" firstAttribute="centerY" secondItem="EQj-mK-hpk" secondAttribute="centerY" id="Ccl-OB-RO4"/>
+                            <constraint firstItem="wgW-ns-xTA" firstAttribute="trailing" secondItem="EQj-mK-hpk" secondAttribute="trailing" id="Ccw-eJ-Grd"/>
+                            <constraint firstItem="wgW-ns-xTA" firstAttribute="top" secondItem="EQj-mK-hpk" secondAttribute="top" id="iWC-jY-2k0"/>
+                            <constraint firstItem="bKG-Xy-1Pb" firstAttribute="centerX" secondItem="EQj-mK-hpk" secondAttribute="centerX" id="og3-Cn-aJ4"/>
+                            <constraint firstItem="bKG-Xy-1Pb" firstAttribute="top" relation="greaterThanOrEqual" secondItem="EQj-mK-hpk" secondAttribute="top" constant="40" id="yBR-iP-uel"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="EQj-mK-hpk"/>
+                        <viewLayoutGuide key="layoutMargins" id="PyW-V8-LyY"/>
+                    </customView>
+                    <connections>
+                        <outlet property="_emptyTOCField" destination="bKG-Xy-1Pb" id="2Xs-Sx-Wk9"/>
+                        <outlet property="_outlineView" destination="PIP-ad-fXC" id="avO-kS-JvR"/>
+                    </connections>
+                </viewController>
+                <customObject id="cQB-4v-GVl" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="641" y="-180"/>
+        </scene>
+    </scenes>
+</document>

@@ -13,12 +13,21 @@
 		4326E1A427439A6900C82DEE /* NSPersistentContainer+sharedContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4326E1A227439A6800C82DEE /* NSPersistentContainer+sharedContainer.m */; };
 		4326E1A727439C3B00C82DEE /* KBIndexManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4326E1A627439C3B00C82DEE /* KBIndexManager.m */; };
 		4326E1AB27439CBC00C82DEE /* KBManPageTasks.m in Sources */ = {isa = PBXBuildFile; fileRef = 4326E1AA27439CBC00C82DEE /* KBManPageTasks.m */; };
-		434429D127391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 434429D027391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m */; };
+		43401D29278A179200EEB06A /* KBSearchSuggestionsPanelController.m in Sources */ = {isa = PBXBuildFile; fileRef = 434429D027391E3C00D222E7 /* KBSearchSuggestionsPanelController.m */; };
+		43401D2C278A1E4000EEB06A /* KBSearchSuggestionsPanelController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43401D2B278A1E4000EEB06A /* KBSearchSuggestionsPanelController.xib */; };
 		434429D5273923E600D222E7 /* KBDocumentLoading.mm in Sources */ = {isa = PBXBuildFile; fileRef = 434429D4273923E600D222E7 /* KBDocumentLoading.mm */; };
 		434429D82739466500D222E7 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 434429D72739466500D222E7 /* UniformTypeIdentifiers.framework */; };
 		435013F22772C9A00007A06A /* NSLayoutConstraint+convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 435013F12772C9A00007A06A /* NSLayoutConstraint+convenience.m */; };
 		435543C32578B46500B3A8ED /* KBTask.mm in Sources */ = {isa = PBXBuildFile; fileRef = 435543C22578B46500B3A8ED /* KBTask.mm */; };
 		435DAA752773DF7B008E707C /* NSError+convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 435DAA742773DF7B008E707C /* NSError+convenience.m */; };
+		4361212A2784F90C007A990D /* KBDocumentController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 436121292784F90C007A990D /* KBDocumentController.storyboard */; };
+		4361212C2784FA0B007A990D /* KBDocumentSplitController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4361212B2784FA0B007A990D /* KBDocumentSplitController.storyboard */; };
+		4361212E2784FA30007A990D /* KBDocumentTOCController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4361212D2784FA30007A990D /* KBDocumentTOCController.storyboard */; };
+		436121302784FABE007A990D /* KBDocumentContentController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4361212F2784FABE007A990D /* KBDocumentContentController.storyboard */; };
+		436121322784FBDD007A990D /* KBDocumentSplitController.m in Sources */ = {isa = PBXBuildFile; fileRef = 436121312784FBDD007A990D /* KBDocumentSplitController.m */; };
+		436121342784FC13007A990D /* KBDocumentContentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 436121332784FC13007A990D /* KBDocumentContentController.m */; };
+		436121362784FC33007A990D /* KBDocumentTOCController.m in Sources */ = {isa = PBXBuildFile; fileRef = 436121352784FC33007A990D /* KBDocumentTOCController.m */; };
+		4361213B2785DE8D007A990D /* NSObject+blockKVO.m in Sources */ = {isa = PBXBuildFile; fileRef = 4361213A2785DE8D007A990D /* NSObject+blockKVO.m */; };
 		43C7BA5A2755956F00B5049B /* KBSection.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA592755956F00B5049B /* KBSection.m */; };
 		43C7BA6427559C0100B5049B /* NSManagedObject+convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA6327559C0100B5049B /* NSManagedObject+convenience.m */; };
 		43C7BA692755A5E400B5049B /* KBFilesystemObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA682755A5E400B5049B /* KBFilesystemObject.m */; };
@@ -26,16 +35,15 @@
 		43C7BA702760F84C00B5049B /* NSString+searchPredicateValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 43C7BA6F2760F84C00B5049B /* NSString+searchPredicateValue.m */; };
 		43DE04F4276D04D4004EB220 /* KBIndexUpdateTasks.m in Sources */ = {isa = PBXBuildFile; fileRef = 43DE04F3276D04D4004EB220 /* KBIndexUpdateTasks.m */; };
 		43DE04FA276D0789004EB220 /* NSURL+filesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 43DE04F9276D0789004EB220 /* NSURL+filesystem.m */; };
+		43E26B262789306600AE99FB /* NSURL+documentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E26B252789306600AE99FB /* NSURL+documentController.m */; };
+		43E26B282789411800AE99FB /* KBDocumentControllerIndexManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E26B272789411800AE99FB /* KBDocumentControllerIndexManager.m */; };
 		43E730B92778007E0091090A /* KBDocumentTOCItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E730B82778007E0091090A /* KBDocumentTOCItem.m */; };
-		43E730BB27781CAF0091090A /* KBDocumentTOCViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43E730BA27781CAF0091090A /* KBDocumentTOCViewController.xib */; };
-		43E730BD27781D130091090A /* KBDocumentControllerTOCPopover.m in Sources */ = {isa = PBXBuildFile; fileRef = 43E730BC27781D130091090A /* KBDocumentControllerTOCPopover.m */; };
 		43ED98482575B20400CB3098 /* KBAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED98472575B20400CB3098 /* KBAppDelegate.m */; };
 		43ED984B2575B20400CB3098 /* ManBro.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 43ED98492575B20400CB3098 /* ManBro.xcdatamodeld */; };
 		43ED984D2575B20900CB3098 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43ED984C2575B20900CB3098 /* Assets.xcassets */; };
 		43ED98502575B20900CB3098 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43ED984E2575B20900CB3098 /* MainMenu.xib */; };
 		43ED98532575B20900CB3098 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED98522575B20900CB3098 /* main.m */; };
-		43ED986D2575E90D00CB3098 /* KBDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED986B2575E90D00CB3098 /* KBDocumentController.m */; };
-		43ED986E2575E90D00CB3098 /* KBDocumentController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 43ED986C2575E90D00CB3098 /* KBDocumentController.xib */; };
+		43ED986D2575E90D00CB3098 /* KBDocumentController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 43ED986B2575E90D00CB3098 /* KBDocumentController.mm */; };
 		43ED987B25762B7A00CB3098 /* KBDocumentMeta.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED987A25762B7A00CB3098 /* KBDocumentMeta.m */; };
 		43ED987F25762B8800CB3098 /* KBPrefix.m in Sources */ = {isa = PBXBuildFile; fileRef = 43ED987E25762B8800CB3098 /* KBPrefix.m */; };
 /* End PBXBuildFile section */
@@ -54,7 +62,8 @@
 		4326E1A827439C8500C82DEE /* KBTask_Protected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBTask_Protected.h; sourceTree = "<group>"; };
 		4326E1A927439CBC00C82DEE /* KBManPageTasks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBManPageTasks.h; sourceTree = "<group>"; };
 		4326E1AA27439CBC00C82DEE /* KBManPageTasks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBManPageTasks.m; sourceTree = "<group>"; };
-		434429D027391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentControllerSuggestionsPanel.m; sourceTree = "<group>"; };
+		43401D2B278A1E4000EEB06A /* KBSearchSuggestionsPanelController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KBSearchSuggestionsPanelController.xib; sourceTree = "<group>"; };
+		434429D027391E3C00D222E7 /* KBSearchSuggestionsPanelController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBSearchSuggestionsPanelController.m; sourceTree = "<group>"; };
 		434429D227391E5B00D222E7 /* KBDocumentController_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentController_Private.h; sourceTree = "<group>"; };
 		434429D3273923E600D222E7 /* KBDocumentLoading.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentLoading.h; sourceTree = "<group>"; };
 		434429D4273923E600D222E7 /* KBDocumentLoading.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = KBDocumentLoading.mm; sourceTree = "<group>"; };
@@ -65,6 +74,15 @@
 		435543C22578B46500B3A8ED /* KBTask.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = KBTask.mm; sourceTree = "<group>"; };
 		435DAA732773DF7B008E707C /* NSError+convenience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSError+convenience.h"; sourceTree = "<group>"; };
 		435DAA742773DF7B008E707C /* NSError+convenience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSError+convenience.m"; sourceTree = "<group>"; };
+		436121292784F90C007A990D /* KBDocumentController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = KBDocumentController.storyboard; sourceTree = "<group>"; };
+		4361212B2784FA0B007A990D /* KBDocumentSplitController.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = KBDocumentSplitController.storyboard; sourceTree = "<group>"; };
+		4361212D2784FA30007A990D /* KBDocumentTOCController.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = KBDocumentTOCController.storyboard; sourceTree = "<group>"; };
+		4361212F2784FABE007A990D /* KBDocumentContentController.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = KBDocumentContentController.storyboard; sourceTree = "<group>"; };
+		436121312784FBDD007A990D /* KBDocumentSplitController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentSplitController.m; sourceTree = "<group>"; };
+		436121332784FC13007A990D /* KBDocumentContentController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentContentController.m; sourceTree = "<group>"; };
+		436121352784FC33007A990D /* KBDocumentTOCController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentTOCController.m; sourceTree = "<group>"; };
+		436121392785DE8D007A990D /* NSObject+blockKVO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+blockKVO.h"; sourceTree = "<group>"; };
+		4361213A2785DE8D007A990D /* NSObject+blockKVO.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+blockKVO.m"; sourceTree = "<group>"; };
 		43C7BA582755956F00B5049B /* KBSection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBSection.h; sourceTree = "<group>"; };
 		43C7BA592755956F00B5049B /* KBSection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBSection.m; sourceTree = "<group>"; };
 		43C7BA6227559C0100B5049B /* NSManagedObject+convenience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSManagedObject+convenience.h"; sourceTree = "<group>"; };
@@ -80,10 +98,12 @@
 		43DE04F3276D04D4004EB220 /* KBIndexUpdateTasks.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBIndexUpdateTasks.m; sourceTree = "<group>"; };
 		43DE04F8276D0789004EB220 /* NSURL+filesystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURL+filesystem.h"; sourceTree = "<group>"; };
 		43DE04F9276D0789004EB220 /* NSURL+filesystem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURL+filesystem.m"; sourceTree = "<group>"; };
+		43E26B242789306600AE99FB /* NSURL+documentController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURL+documentController.h"; sourceTree = "<group>"; };
+		43E26B252789306600AE99FB /* NSURL+documentController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURL+documentController.m"; sourceTree = "<group>"; };
+		43E26B272789411800AE99FB /* KBDocumentControllerIndexManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentControllerIndexManager.m; sourceTree = "<group>"; };
+		43E26B292789415300AE99FB /* KBDocumentControllerIndexManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentControllerIndexManager.h; sourceTree = "<group>"; };
 		43E730B72778007E0091090A /* KBDocumentTOCItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentTOCItem.h; sourceTree = "<group>"; };
 		43E730B82778007E0091090A /* KBDocumentTOCItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentTOCItem.m; sourceTree = "<group>"; };
-		43E730BA27781CAF0091090A /* KBDocumentTOCViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KBDocumentTOCViewController.xib; sourceTree = "<group>"; };
-		43E730BC27781D130091090A /* KBDocumentControllerTOCPopover.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentControllerTOCPopover.m; sourceTree = "<group>"; };
 		43ED98432575B20400CB3098 /* ManBro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ManBro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43ED98462575B20400CB3098 /* KBAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBAppDelegate.h; sourceTree = "<group>"; };
 		43ED98472575B20400CB3098 /* KBAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBAppDelegate.m; sourceTree = "<group>"; };
@@ -94,8 +114,7 @@
 		43ED98522575B20900CB3098 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		43ED98542575B20900CB3098 /* ManBro.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ManBro.entitlements; sourceTree = "<group>"; };
 		43ED986A2575E90D00CB3098 /* KBDocumentController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentController.h; sourceTree = "<group>"; };
-		43ED986B2575E90D00CB3098 /* KBDocumentController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentController.m; sourceTree = "<group>"; };
-		43ED986C2575E90D00CB3098 /* KBDocumentController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = KBDocumentController.xib; sourceTree = "<group>"; };
+		43ED986B2575E90D00CB3098 /* KBDocumentController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = KBDocumentController.mm; sourceTree = "<group>"; };
 		43ED987925762B7A00CB3098 /* KBDocumentMeta.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBDocumentMeta.h; sourceTree = "<group>"; };
 		43ED987A25762B7A00CB3098 /* KBDocumentMeta.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KBDocumentMeta.m; sourceTree = "<group>"; };
 		43ED987D25762B8800CB3098 /* KBPrefix.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KBPrefix.h; sourceTree = "<group>"; };
@@ -138,6 +157,8 @@
 			isa = PBXGroup;
 			children = (
 				43D9A2012771577600A34485 /* NSObject+abstract.h */,
+				436121392785DE8D007A990D /* NSObject+blockKVO.h */,
+				4361213A2785DE8D007A990D /* NSObject+blockKVO.m */,
 				435DAA732773DF7B008E707C /* NSError+convenience.h */,
 				435DAA742773DF7B008E707C /* NSError+convenience.m */,
 				43C7BA6E2760F84C00B5049B /* NSString+searchPredicateValue.h */,
@@ -262,15 +283,24 @@
 			children = (
 				435013F02772C9A00007A06A /* NSLayoutConstraint+convenience.h */,
 				435013F12772C9A00007A06A /* NSLayoutConstraint+convenience.m */,
+				43E26B242789306600AE99FB /* NSURL+documentController.h */,
+				43E26B252789306600AE99FB /* NSURL+documentController.m */,
 				434429D3273923E600D222E7 /* KBDocumentLoading.h */,
 				434429D4273923E600D222E7 /* KBDocumentLoading.mm */,
+				43E26B292789415300AE99FB /* KBDocumentControllerIndexManager.h */,
+				43E26B272789411800AE99FB /* KBDocumentControllerIndexManager.m */,
 				43ED986A2575E90D00CB3098 /* KBDocumentController.h */,
 				434429D227391E5B00D222E7 /* KBDocumentController_Private.h */,
-				43ED986B2575E90D00CB3098 /* KBDocumentController.m */,
-				434429D027391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m */,
-				43E730BC27781D130091090A /* KBDocumentControllerTOCPopover.m */,
-				43ED986C2575E90D00CB3098 /* KBDocumentController.xib */,
-				43E730BA27781CAF0091090A /* KBDocumentTOCViewController.xib */,
+				43ED986B2575E90D00CB3098 /* KBDocumentController.mm */,
+				436121292784F90C007A990D /* KBDocumentController.storyboard */,
+				436121312784FBDD007A990D /* KBDocumentSplitController.m */,
+				4361212B2784FA0B007A990D /* KBDocumentSplitController.storyboard */,
+				434429D027391E3C00D222E7 /* KBSearchSuggestionsPanelController.m */,
+				43401D2B278A1E4000EEB06A /* KBSearchSuggestionsPanelController.xib */,
+				436121332784FC13007A990D /* KBDocumentContentController.m */,
+				4361212F2784FABE007A990D /* KBDocumentContentController.storyboard */,
+				436121352784FC33007A990D /* KBDocumentTOCController.m */,
+				4361212D2784FA30007A990D /* KBDocumentTOCController.storyboard */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -333,10 +363,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				436121302784FABE007A990D /* KBDocumentContentController.storyboard in Resources */,
+				43401D2C278A1E4000EEB06A /* KBSearchSuggestionsPanelController.xib in Resources */,
 				43ED984D2575B20900CB3098 /* Assets.xcassets in Resources */,
+				4361212C2784FA0B007A990D /* KBDocumentSplitController.storyboard in Resources */,
 				43ED98502575B20900CB3098 /* MainMenu.xib in Resources */,
-				43ED986E2575E90D00CB3098 /* KBDocumentController.xib in Resources */,
-				43E730BB27781CAF0091090A /* KBDocumentTOCViewController.xib in Resources */,
+				4361212A2784F90C007A990D /* KBDocumentController.storyboard in Resources */,
+				4361212E2784FA30007A990D /* KBDocumentTOCController.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -348,28 +381,33 @@
 			buildActionMask = 2147483647;
 			files = (
 				4326E19D27439A0B00C82DEE /* CoreData+logging.m in Sources */,
+				436121362784FC33007A990D /* KBDocumentTOCController.m in Sources */,
 				4326A14E276C33B00031E746 /* KBDocumentContent.m in Sources */,
 				43ED984B2575B20400CB3098 /* ManBro.xcdatamodeld in Sources */,
 				435543C32578B46500B3A8ED /* KBTask.mm in Sources */,
 				4326A14B276C0EEF0031E746 /* NSComparisonPredicate+convenience.m in Sources */,
-				43ED986D2575E90D00CB3098 /* KBDocumentController.m in Sources */,
+				43ED986D2575E90D00CB3098 /* KBDocumentController.mm in Sources */,
+				43401D29278A179200EEB06A /* KBSearchSuggestionsPanelController.m in Sources */,
+				436121322784FBDD007A990D /* KBDocumentSplitController.m in Sources */,
+				436121342784FC13007A990D /* KBDocumentContentController.m in Sources */,
 				43E730B92778007E0091090A /* KBDocumentTOCItem.m in Sources */,
 				435013F22772C9A00007A06A /* NSLayoutConstraint+convenience.m in Sources */,
 				43C7BA6427559C0100B5049B /* NSManagedObject+convenience.m in Sources */,
 				43C7BA5A2755956F00B5049B /* KBSection.m in Sources */,
 				43DE04FA276D0789004EB220 /* NSURL+filesystem.m in Sources */,
 				43ED987F25762B8800CB3098 /* KBPrefix.m in Sources */,
+				43E26B262789306600AE99FB /* NSURL+documentController.m in Sources */,
 				435DAA752773DF7B008E707C /* NSError+convenience.m in Sources */,
 				4326E1A727439C3B00C82DEE /* KBIndexManager.m in Sources */,
 				43C7BA692755A5E400B5049B /* KBFilesystemObject.m in Sources */,
 				4326E1AB27439CBC00C82DEE /* KBManPageTasks.m in Sources */,
 				43ED987B25762B7A00CB3098 /* KBDocumentMeta.m in Sources */,
 				4326E1A427439A6900C82DEE /* NSPersistentContainer+sharedContainer.m in Sources */,
-				43E730BD27781D130091090A /* KBDocumentControllerTOCPopover.m in Sources */,
 				43ED98532575B20900CB3098 /* main.m in Sources */,
 				43C7BA702760F84C00B5049B /* NSString+searchPredicateValue.m in Sources */,
-				434429D127391E3C00D222E7 /* KBDocumentControllerSuggestionsPanel.m in Sources */,
 				434429D5273923E600D222E7 /* KBDocumentLoading.mm in Sources */,
+				4361213B2785DE8D007A990D /* NSObject+blockKVO.m in Sources */,
+				43E26B282789411800AE99FB /* KBDocumentControllerIndexManager.m in Sources */,
 				43C7BA6C2760C3E100B5049B /* KBSearchManager.m in Sources */,
 				43ED98482575B20400CB3098 /* KBAppDelegate.m in Sources */,
 				43DE04F4276D04D4004EB220 /* KBIndexUpdateTasks.m in Sources */,
@@ -422,6 +460,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COMPILER_INDEX_STORE_ENABLE = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -507,7 +546,6 @@
 				CODE_SIGN_ENTITLEMENTS = "ManBro/Supporting Files/ManBro.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				COMPILER_INDEX_STORE_ENABLE = YES;
 				DEVELOPMENT_TEAM = BA9979F6M6;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "ManBro/Supporting Files/Info.plist";

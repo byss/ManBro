@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="x5w-eK-FEl">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+        <capability name="Search Toolbar Item" minToolsVersion="12.0" minSystemVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Window Controller-->
+        <scene sceneID="Phb-vA-RQ5">
+            <objects>
+                <windowController id="x5w-eK-FEl" customClass="KBDocumentController" sceneMemberID="viewController">
+                    <window key="window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" tabbingMode="preferred" toolbarStyle="compact" id="bRO-33-Aa8">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES" fullSizeContentView="YES"/>
+                        <rect key="contentRect" x="123" y="166" width="1009" height="611"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1025"/>
+                        <view key="contentView" translatesAutoresizingMaskIntoConstraints="NO" id="uaw-H6-u3a">
+                            <rect key="frame" x="0.0" y="0.0" width="1009" height="611"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </view>
+                        <toolbar key="toolbar" implicitIdentifier="5B3B1BA5-C0F2-46C9-8DFC-E9E69F743393" explicitIdentifier="Toolbar" centeredItem="7qL-EN-boB" allowsUserCustomization="NO" showsBaselineSeparator="NO" displayMode="iconOnly" sizeMode="regular" id="WvP-c8-37p">
+                            <allowedToolbarItems>
+                                <toolbarItem implicitItemIdentifier="474FC67D-A2F6-4282-9215-4C31B3C7D25F" label="" paletteLabel="Back" tag="-1" image="NSGoBackTemplate" visibilityPriority="1010" sizingBehavior="auto" navigational="YES" id="39d-IP-FHy">
+                                    <connections>
+                                        <action selector="goBack:" target="ER2-gx-pjQ" id="lRN-AH-nIE"/>
+                                    </connections>
+                                </toolbarItem>
+                                <toolbarItem implicitItemIdentifier="81EDAE10-E72E-4526-B2A1-7933FD9AAB64" label="" paletteLabel="Forward" tag="-1" image="NSGoForwardTemplate" visibilityPriority="1010" sizingBehavior="auto" navigational="YES" id="Yq2-Xa-fXl">
+                                    <connections>
+                                        <action selector="goForward:" target="ER2-gx-pjQ" id="xgV-H2-wRe"/>
+                                    </connections>
+                                </toolbarItem>
+                                <toolbarItem implicitItemIdentifier="69472705-451D-4A01-AFE8-E2B179EB79DB" label="" paletteLabel="Table of Contents" tag="-1" image="NSListViewTemplate" visibilityPriority="1010" sizingBehavior="auto" selectable="YES" navigational="YES" id="d3u-90-qUz">
+                                    <connections>
+                                        <action selector="toggleSidebar:" target="ER2-gx-pjQ" id="gpf-GF-dRw"/>
+                                    </connections>
+                                </toolbarItem>
+                                <searchToolbarItem implicitItemIdentifier="4B6B955B-0235-4953-81C6-243DA10D2161" explicitItemIdentifier="Search" label="" paletteLabel="Search" visibilityPriority="1001" id="7qL-EN-boB">
+                                    <nil key="toolTip"/>
+                                    <searchField key="view" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fky-SV-yQh">
+                                        <rect key="frame" x="0.0" y="0.0" width="500" height="22"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                        <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" sendsSearchStringImmediately="YES" recentsAutosaveName="Search" id="UP0-5o-F53">
+                                            <font key="font" metaFont="system"/>
+                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </searchFieldCell>
+                                        <connections>
+                                            <outlet property="delegate" destination="x5w-eK-FEl" id="zSU-1M-Ya8"/>
+                                        </connections>
+                                    </searchField>
+                                </searchToolbarItem>
+                            </allowedToolbarItems>
+                            <defaultToolbarItems>
+                                <toolbarItem reference="39d-IP-FHy"/>
+                                <toolbarItem reference="Yq2-Xa-fXl"/>
+                                <toolbarItem reference="d3u-90-qUz"/>
+                                <searchToolbarItem reference="7qL-EN-boB"/>
+                            </defaultToolbarItems>
+                        </toolbar>
+                        <connections>
+                            <outlet property="delegate" destination="x5w-eK-FEl" id="jnr-M9-J1A"/>
+                        </connections>
+                    </window>
+                    <connections>
+                        <outlet property="_searchItem" destination="7qL-EN-boB" id="24e-W1-9JR"/>
+                        <outlet property="_tocItem" destination="d3u-90-qUz" id="N3s-Aa-So2"/>
+                        <segue destination="CVA-gF-32c" kind="relationship" relationship="window.shadowedContentViewController" id="IBk-7a-Sby"/>
+                    </connections>
+                </windowController>
+                <customObject id="ER2-gx-pjQ" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-260.5" y="-118.5"/>
+        </scene>
+        <!--KBDocumentSplitController-->
+        <scene sceneID="FEv-LH-vGe">
+            <objects>
+                <controllerPlaceholder storyboardName="KBDocumentSplitController" id="CVA-gF-32c" sceneMemberID="viewController"/>
+                <customObject id="t9L-c3-JvH" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="491" y="-12"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="NSGoBackTemplate" width="10" height="14"/>
+        <image name="NSGoForwardTemplate" width="10" height="14"/>
+        <image name="NSListViewTemplate" width="16" height="12"/>
+    </resources>
+</document>

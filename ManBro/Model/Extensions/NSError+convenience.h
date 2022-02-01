@@ -35,12 +35,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, getter = isUserCancelledError) BOOL userCancelledError;
 
+- (instancetype) initPOSIXErrorWithCurrentErrno;
+- (instancetype) initPOSIXErrorWithCode: (NSInteger) code;
+- (instancetype) initPOSIXErrorWithCode: (NSInteger) code userInfo: (NSDictionary <NSErrorUserInfoKey, id> *__nullable) userInfo;
+
 - (instancetype) initCocoaErrorWithCode: (NSInteger) code;
 - (instancetype) initCocoaErrorWithCode: (NSInteger) code userInfo: (NSDictionary <NSErrorUserInfoKey, id> *__nullable) userInfo;
 
 - (instancetype) initFileReadNoSuchFileErrorWithPath: (NSString *) path;
 
 #pragma mark - URL errors
+
+@property (nonatomic, readonly, getter = isBadURLError) BOOL badURLError;
 
 - (instancetype) initURLErrorWithCode: (NSInteger) code;
 - (instancetype) initURLErrorWithCode: (NSInteger) code userInfo: (NSDictionary <NSErrorUserInfoKey, id> *__nullable) userInfo;

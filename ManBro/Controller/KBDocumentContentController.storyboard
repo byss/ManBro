@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="19529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="hsn-bY-JxF">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="19529"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Document Content Controller-->
+        <scene sceneID="9n3-fF-lTG">
+            <objects>
+                <viewController storyboardIdentifier="NSViewController-hsn-bY-JxF" id="hsn-bY-JxF" customClass="KBDocumentContentController" sceneMemberID="viewController">
+                    <stackView key="view" distribution="fill" orientation="vertical" alignment="centerX" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Uh-LJ-XiC">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="300"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    </stackView>
+                    <connections>
+                        <outlet property="_textFinder" destination="aoL-Xd-bfp" id="2cx-qg-epx"/>
+                    </connections>
+                </viewController>
+                <customObject id="YUP-ou-i5h" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+                <textFinder id="aoL-Xd-bfp">
+                    <connections>
+                        <outlet property="findBarContainer" destination="hsn-bY-JxF" id="VYo-I4-Ijq"/>
+                    </connections>
+                </textFinder>
+            </objects>
+            <point key="canvasLocation" x="1014" y="90"/>
+        </scene>
+    </scenes>
+</document>

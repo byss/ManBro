@@ -8,10 +8,12 @@
 
 #import "KBTask_Protected.h"
 
-#include <paths.h>
-#include <os/log.h>
-#include <type_traits>
-#include <objc/runtime.h>
+#import <paths.h>
+#import <os/log.h>
+#import <type_traits>
+#import <objc/runtime.h>
+
+#import "NSURL+filesystem.h"
 
 static NSErrorUserInfoKey const KBTaskErrorTaskKey = @"ru.byss.KBTask.Error.task";
 static NSErrorUserInfoKey const KBTaskErrorTaskStdoutKey = @"ru.byss.KBTask.Error.stdout";

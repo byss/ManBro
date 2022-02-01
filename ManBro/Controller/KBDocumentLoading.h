@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface KBDocumentMeta (KBDocumentLoader)
 
 @property (nonatomic, readonly, nullable) NSURL *loaderURI;
+@property (nonatomic, readonly) NSString *presentationTitle;
 
 + (NSManagedObjectID *__nullable) objectIDWithLoaderURI: (NSURL *) loaderURI error: (NSError *__autoreleasing *__nullable) error;
 

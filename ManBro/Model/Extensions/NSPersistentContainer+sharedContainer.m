@@ -88,7 +88,9 @@ NS_INLINE void KBPersistentContainerCreateSharedInstance (void *instance) {
 		_log = os_log_create ("CoreData", "KBPersistentContainer");
 		[self loadDefaultStores];
 		[self.viewContext setupAsMainContext];
-		[[self newBackgroundContext] deleteStaleObjectsAndWait];
+		if ([self.persistentStoreDescriptions.firstObject.type isEqualToString:NSSQLiteStoreType]) {
+			[[self newBackgroundContext] deleteStaleObjectsAndWait];
+		}
 	}
 	
 	return self;

@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class KBDocumentContent;
+@class KBDocumentMeta, KBDocumentContent;
 @interface KBDocumentTOCItem: NSManagedObject
 
 @property (nonatomic, copy) NSString *anchor;
@@ -19,11 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) KBDocumentTOCItem *parent;
 @property (nonatomic, strong) NSOrderedSet <KBDocumentTOCItem *> *children;
 
+@property (nonatomic, readonly) KBDocumentMeta *document;
 @property (nonatomic, readonly) BOOL hasChildren;
 @property (nonatomic, readonly) NSUInteger level;
 
 - (instancetype) initRootItemWithContent: (KBDocumentContent *) content;
-- (instancetype) initWithParent: (KBDocumentTOCItem *) parent anchor: (NSString *) anchor title: (NSString *) title;
 
 - (void) populateChildrenUsingData: (id) tocData;
 

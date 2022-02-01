@@ -18,8 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter = isReadableRegularFile) BOOL readableRegularFile;
 @property (nonatomic, readonly, getter = isReadableDirectory) BOOL readableDirectory;
 
+@property (nonatomic, readonly, nullable) NSString *fileSystemPath;
+
 - (BOOL) isReadableRegularFile: (NSError *__autoreleasing *) error;
 - (BOOL) isReadableDirectory: (NSError *__autoreleasing *) error;
+
+- (void) checkHostResolvesToCurrentMachineWithCompletion: (void (^) (BOOL result, NSError *__nullable error)) completion;
 
 @end
 

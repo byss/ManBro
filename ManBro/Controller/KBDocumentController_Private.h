@@ -7,31 +7,32 @@
 //
 
 #import "KBDocumentController.h"
+#import "NSURL+documentController.h"
+#import "KBDocumentControllerIndexManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, KBDocumentRequestOptions) {
-	KBDocumentBecomesCurrent = 1 << 0,
-	KBCreateDocumentWindow = 1 << 1,
-	
-	KBIgnoreDocument = 0,
-	KBReplaceCurrentContext = KBDocumentBecomesCurrent,
-	KBOpenBackgroundWindow = KBCreateDocumentWindow,
-	KBOpenForegroundWindow = KBDocumentBecomesCurrent | KBCreateDocumentWindow,
-};
+@protocol KBDocumentController <NSObject>
 
-@class KBDocumentMeta;
-@class KBDocumentControllerSuggestionsPanel;
-@protocol KBDocumentControllerSearchPanelDelegate <NSObject>
-
-@required
-- (void) searchPanel: (KBDocumentControllerSuggestionsPanel *) panel didRequestDocument: (KBDocumentMeta *) document options: (KBDocumentRequestOptions) options;
+@property (nonatomic, strong, nullable) KBDocumentMeta *currentDocument;
 
 @end
 
-@interface KBDocumentControllerSuggestionsPanel: NSPanel
+@class KBDocumentSplitController, KBDocumentTOCController, KBDocumentContentController;
+@interface KBDocumentController () <KBDocumentController>
 
-@property (weak) id <KBDocumentControllerSearchPanelDelegate> navigationDelegate;
+@property (nonatomic, readonly) NSUInteger identifier;
+@property (nonatomic, readonly) KBDocumentSplitController *contentViewController;
+@property (nonatomic, readonly) KBDocumentTOCController *tocController;
+@property (nonatomic, readonly) KBDocumentContentController *contentController;
+
++ (KBDocumentController *__nullable) documentControllerWithIdentifier: (NSUInteger) identifier;
+
+@end
+
+@interface KBSearchSuggestionsPanelController: NSWindowController
+
+@property (nonatomic, assign) NSSize maxSize;
 
 - (void) setQueryText: (NSString *) queryText;
 
@@ -41,27 +42,40 @@ typedef NS_ENUM(NSUInteger, KBDocumentRequestOptions) {
 - (BOOL) selectPrevSuggestionsPage;
 - (BOOL) selectFirstSuggestion;
 - (BOOL) selectLastSuggestion;
+
 - (BOOL) confirmSuggestionSelection;
 
 @end
 
-@class KBDocumentTOCItem;
-@class KBDocumentControllerTOCPopover;
-@protocol KBDocumentControllerTOCPopoverDelegate <NSPopoverDelegate>
+@interface KBDocumentSplitController: NSSplitViewController <KBDocumentController>
 
-@required
-- (void) tocPopover: (KBDocumentControllerTOCPopover *) popover didSelectTOCItem: (KBDocumentTOCItem *) item;
+@property (nonatomic, readonly) NSSplitViewItem *tocItem;
+@property (nonatomic, readonly) NSSplitViewItem *contentItem;
+@property (nonatomic, readonly) KBDocumentTOCController *tocController;
+@property (nonatomic, readonly) KBDocumentContentController *contentController;
 
 @end
 
-@interface KBDocumentControllerTOCPopover: NSPopover
+@class KBDocumentTOCItem;
+@interface KBDocumentContentController: NSViewController <KBDocumentController>
 
-@property (nullable, weak) id <KBDocumentControllerTOCPopoverDelegate> delegate;
++ (BOOL) canOpenURL: (NSURL *) url;
++ (BOOL) openURL: (NSURL *) url;
 
-- (instancetype) init NS_UNAVAILABLE;
-- (instancetype) initWithCoder: (NSCoder *) coder NS_UNAVAILABLE;
+- (void) loadDocumentAtURL: (NSURL *) loaderURI;
 
-- (instancetype) initWithTOC: (KBDocumentTOCItem *) toc NS_DESIGNATED_INITIALIZER;
+- (void) loadTOCDataWithCompletion: (void (^) (id __nullable tocData, NSError *__nullable error)) completion;
+- (void) openTOCItem: (KBDocumentTOCItem *) tocItem;
+
+@end
+
+@interface KBDocumentTOCController: NSViewController <KBDocumentController>
+
+@end
+
+@interface NSViewController (KBDocumentController)
+
+@property (nonatomic, readonly, nullable) KBDocumentController *documentController;
 
 @end
 

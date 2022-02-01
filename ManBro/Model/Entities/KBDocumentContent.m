@@ -9,14 +9,16 @@
 #import "KBDocumentContent.h"
 
 #import "KBDocumentTOCItem.h"
-#import "NSComparisonPredicate+convenience.h"
+#import "NSManagedObject+convenience.h"
 #import "NSPersistentContainer+sharedContainer.h"
 
 @implementation KBDocumentContent
 
 @dynamic meta, html, toc;
 
-+ (NSPredicate *) staleObjectsPredicate { return [[NSComparisonPredicate alloc] initWithType:NSEqualToPredicateOperatorType forKeyPath:@"meta" value:[NSNull null]]; }
++ (NSPredicate *) staleObjectsPredicate {
+	return [self predicateMatchingObjectsWithValues:@[[NSNull null]] forPropertiesNamed:@[@"meta"]];
+}
 
 - (instancetype) initWithHTML: (NSData *) html meta: (KBDocumentMeta *) meta {
 	if (self = [self initWithContext:meta.managedObjectContext]) {
@@ -27,7 +29,7 @@
 }
 
 - (void) willSave {
-	if (!self.meta  && !self.deleted) { [self.managedObjectContext deleteObject:self]; }
+	if (!self.meta && !self.deleted) { [self.managedObjectContext deleteObject:self]; }
 	[super willSave];
 }
 

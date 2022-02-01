@@ -26,8 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @class KBDocumentMeta;
 @interface KBDocumentController (documentLoading)
 
-- (void) loadDocument: (KBDocumentMeta *) document;
-- (void) loadDocumentAtURL: (NSURL *) documentURL;
++ (BOOL) canOpenURL: (NSURL *) url;
++ (BOOL) openURL: (NSURL *) url;
 
 @end
 

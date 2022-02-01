@@ -216,7 +216,7 @@ NS_INLINE void KBIndexUpdateTaskCommonInit (KBIndexUpdateTask *self, NSManagedOb
 		objectURL = object.URL;
 		generationID = object.generationIdentifier;
 #if DEBUG
-		context.name = [[NSString alloc] initWithFormat:@"KBIndexManager: %@ %s", object.entity.name, object.URL.absoluteURL.fileSystemRepresentation];
+		context.name = [[NSString alloc] initWithFormat:@"KBIndexManager: %@ %@", object.entity.name, object.URL.absoluteURL.fileSystemPath];
 #endif
 	}];
 	

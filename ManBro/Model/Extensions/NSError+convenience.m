@@ -27,6 +27,19 @@ NSStaticErrorInstance (userCancelledError, NSCocoaErrorDomain, NSUserCancelledEr
 NSStaticErrorInstance (fileReadCorruptFileError, NSCocoaErrorDomain, NSFileReadCorruptFileError);
 
 - (BOOL) isUserCancelledError { return [self.domain isEqualToString:NSCocoaErrorDomain] && (self.code == NSUserCancelledError); }
+- (BOOL) isBadURLError { return [self.domain isEqualToString:NSURLErrorDomain] && (self.code == NSURLErrorBadURL); }
+
+- (instancetype) initPOSIXErrorWithCurrentErrno {
+	return [self initPOSIXErrorWithCode:errno];
+}
+
+- (instancetype) initPOSIXErrorWithCode: (NSInteger) code {
+	return [self initPOSIXErrorWithCode:code userInfo:nil];
+}
+
+- (instancetype) initPOSIXErrorWithCode: (NSInteger) code userInfo: (NSDictionary <NSErrorUserInfoKey, id> *) userInfo {
+	return [self initWithDomain:NSPOSIXErrorDomain code:code userInfo:userInfo];
+}
 
 - (instancetype) initCocoaErrorWithCode: (NSInteger) code { return [self initCocoaErrorWithCode:code userInfo:nil]; }
 - (instancetype) initCocoaErrorWithCode: (NSInteger) code userInfo: (NSDictionary <NSErrorUserInfoKey, id> *) userInfo {
